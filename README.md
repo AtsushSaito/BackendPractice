@@ -204,3 +204,57 @@ src/
 ## ライセンス
 
 [MIT licensed](LICENSE)
+
+## データベース設計
+
+### 接続情報
+
+データベース接続情報は主に以下のファイルで設定しています：
+
+1. **docker-compose.yml**
+
+   - PostgreSQLサービスの設定
+   - データベース名：`threadboard`
+   - ユーザー名：`postgres`
+   - パスワード：`postgres`
+   - ポート：`5432`
+
+2. **src/app.module.ts**
+   - TypeORMの設定
+   - 環境変数から接続情報を取得（Docker環境変数経由）
+   - エンティティの登録
+
+### テーブル・カラム定義
+
+テーブルとカラムの定義は、Domain層のエンティティクラスで行われています：
+
+1. **src/domain/users/entities/user.entity.ts**
+
+   - `users`テーブルの定義
+   - カラム：`id`, `username`, `email`, `password`, `createdAt`, `updatedAt`
+   - リレーション：Thread（1対多）, Post（1対多）
+
+2. **src/domain/threads/entities/thread.entity.ts**
+
+   - `threads`テーブルの定義
+   - カラム：`id`, `title`, `description`, `createdAt`, `updatedAt`
+   - リレーション：User（多対1）, Post（1対多）
+
+3. **src/domain/posts/entities/post.entity.ts**
+   - `posts`テーブルの定義
+   - カラム：`id`, `content`, `createdAt`, `updatedAt`
+   - リレーション：User（多対1）, Thread（多対1）, Parent Post（多対1、自己参照）
+
+### マイグレーション
+
+データベースのマイグレーションは自動生成されたファイル **src/1747036646133-migrations.ts** に定義されています。このファイルには：
+
+- テーブル作成のSQLクエリ
+- 外部キー制約の定義
+- ロールバック用のdown関数
+
+### データベース初期化フロー
+
+1. Dockerコンテナ起動時にPostgreSQLサービスが初期化
+2. NestJSアプリケーション起動時にTypeORMがエンティティ定義に基づいてテーブルを作成/同期
+3. 本番環境では、明示的にマイグレーションを実行するフローを推奨
