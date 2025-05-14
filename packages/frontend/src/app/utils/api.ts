@@ -1,0 +1,195 @@
+// Nextのフロントエンドからアクセスするときは相対パスで十分
+const API_BASE_URL = '';
+
+// トークン取得用の安全なヘルパー関数
+function getSavedToken(): string | null {
+  // ブラウザ環境でのみ実行
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    return localStorage.getItem('token');
+  } catch (e) {
+    console.error('ローカルストレージからトークンの取得に失敗:', e);
+    return null;
+  }
+}
+
+// デバッグ用にトークンの状態をログに出力
+function logTokenState() {
+  if (typeof window !== 'undefined') {
+    try {
+      const token = localStorage.getItem('token');
+      console.log('Token state check:', token ? 'Token exists' : 'No token');
+      if (token) {
+        console.log('Token starts with:', token.substring(0, 15) + '...');
+      }
+    } catch (e) {
+      console.error('トークン状態のログ出力に失敗:', e);
+    }
+  }
+}
+
+// API初期化時にトークン状態をログに出力
+if (typeof window !== 'undefined') {
+  console.log('API client initialized, checking token...');
+  setTimeout(() => {
+    logTokenState();
+  }, 100);
+}
+
+// APIリクエスト用の関数を定義
+export async function fetchApi<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  // リクエスト前にトークン状態をログに出力
+  logTokenState();
+
+  // デフォルトのヘッダーを設定
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  // JWTトークンがローカルストレージにあれば追加
+  const token = getSavedToken();
+  if (token) {
+    // 'Bearer 'プレフィックスを確認して、なければ追加する
+    headers['Authorization'] = token.startsWith('Bearer ')
+      ? token
+      : `Bearer ${token}`;
+
+    console.log(
+      'Auth header set:',
+      headers['Authorization'].substring(0, 20) + '...',
+    );
+  } else {
+    console.log('No token available for request to:', endpoint);
+  }
+
+  // リクエスト情報をログに出力
+  console.log(`API request to ${endpoint}`);
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  // レスポンスのステータスを詳細にログ出力
+  console.log(`API response status for ${endpoint}: ${response.status}`);
+
+  // レスポンスが成功しなかった場合はエラーをスロー
+  if (!response.ok) {
+    let errorData = {};
+    try {
+      errorData = await response.json();
+      console.error(`API error response for ${endpoint}:`, errorData);
+    } catch (e) {
+      console.error(`Failed to parse error response for ${endpoint}:`, e);
+      const text = await response.text().catch(() => 'No response body');
+      console.error(`Raw error response for ${endpoint}:`, text);
+      errorData = { message: text };
+    }
+
+    throw new Error(
+      errorData.message || `API error with status: ${response.status}`,
+    );
+  }
+
+  // レスポンスデータをパースして返す
+  try {
+    const data = await response.json();
+    console.log(
+      `API response data for ${endpoint} (summary):`,
+      typeof data === 'object'
+        ? `Object with ${Object.keys(data).length} keys`
+        : typeof data,
+    );
+    return data;
+  } catch (e) {
+    console.error(`Failed to parse success response for ${endpoint}:`, e);
+    const text = await response.text().catch(() => 'No response body');
+    console.error(`Raw success response for ${endpoint}:`, text);
+    throw new Error(`Failed to parse response: ${e.message}`);
+  }
+}
+
+// 各APIエンドポイントに対応する関数
+export const api = {
+  // スレッド関連
+  threads: {
+    getAll: () => {
+      console.log('Getting all threads');
+      return fetchApi<any[]>('/api/threads');
+    },
+
+    getById: (id: string) => {
+      console.log(`Getting thread by ID: ${id}`);
+      return fetchApi<any>(`/api/threads/${id}`);
+    },
+
+    create: (data: any) => {
+      console.log('Creating new thread:', data);
+      return fetchApi<any>('/api/threads', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+  },
+
+  // 投稿関連
+  posts: {
+    getByThreadId: (threadId: string) => {
+      console.log(`Getting posts for thread: ${threadId}`);
+      return fetchApi<any[]>(`/api/posts?threadId=${threadId}`);
+    },
+
+    getById: (id: string) => {
+      console.log(`Getting post by ID: ${id}`);
+      return fetchApi<any>(`/api/posts/${id}`);
+    },
+
+    getReplies: (postId: string) => {
+      console.log(`Getting replies for post: ${postId}`);
+      return fetchApi<any[]>(`/api/posts/${postId}/replies`);
+    },
+
+    create: (data: any) => {
+      console.log('Creating new post:', data);
+      return fetchApi<any>('/api/posts', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+  },
+
+  // 認証関連
+  auth: {
+    login: async (data: any) => {
+      console.log('Logging in user:', data.username);
+      const response = await fetchApi<any>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      // レスポンスをデバッグ出力
+      console.log('Auth login response:', response);
+
+      return response;
+    },
+    register: (data: any) => {
+      console.log('Registering new user:', data.username);
+      return fetchApi<any>('/api/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    getCurrentUser: () => {
+      console.log('Getting current user profile');
+      return fetchApi<any>('/api/auth/profile');
+    },
+  },
+};

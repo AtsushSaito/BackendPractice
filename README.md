@@ -97,19 +97,42 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
-# スレッド掲示板API
+# スレッド型掲示板アプリケーション
 
-## プロジェクト概要
+モノレポ構成で作成された、スレッド型掲示板のWebアプリケーションです。NestJS、Next.js、PostgreSQLを使用しています。
 
-このプロジェクトは、ユーザー管理、スレッド管理、投稿管理機能を持つ掲示板APIです。NestJSとTypeORMを使用して実装されています。
+## アクセス情報
 
-## 技術スタック
+掲示板システムは以下のURLでアクセスできます:
 
-- NestJS: バックエンドフレームワーク
-- TypeORM: ORMライブラリ
-- PostgreSQL: データベース
-- JWT: 認証
-- Swagger: API文書化
+- フロントエンド: http://localhost:3001
+- バックエンドAPI: http://localhost:3000
+- Swagger API ドキュメント: http://localhost:3000/api
+
+## Docker利用方法
+
+```bash
+# システムを起動するには
+$ docker-compose up
+
+# システムを停止するには
+$ docker-compose down
+
+# 変更を加えた後に再ビルドして起動するには
+$ docker-compose up --build
+
+# 使用しなくなったコンテナを含めて完全に停止するには
+$ docker-compose down --remove-orphans
+```
+
+掲示板システムではアカウント登録とログイン後に、スレッドの作成や投稿が可能です。投稿への返信もサポートされています。
+
+## プロジェクト構成
+
+このプロジェクトはモノレポ構成で、以下のパッケージを含んでいます：
+
+- `packages/backend`: NestJSで実装されたバックエンドAPI
+- `packages/frontend`: Next.jsで実装されたフロントエンドアプリケーション
 
 ## 機能一覧
 
@@ -131,79 +154,54 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
    - 投稿への返信
    - 返信一覧取得（投稿単位）
 
-## セットアップ
+## セットアップ手順
+
+### Dockerを使用する場合
+
+Docker Composeを使用して、バックエンドとフロントエンドを同時に実行できます：
 
 ```bash
 # リポジトリをクローン
-$ git clone https://github.com/yourusername/threadboard-api.git
+$ git clone https://github.com/yourusername/thread-board.git
+$ cd thread-board
 
-# 依存関係をインストール
+# Dockerコンテナを起動
+$ docker-compose up --build
+```
+
+起動後、以下のURLでアクセスできます：
+
+- フロントエンド: http://localhost:3001
+- バックエンドAPI: http://localhost:3000
+- API仕様(Swagger): http://localhost:3000/api
+
+### 手動セットアップ
+
+#### 1. バックエンドのセットアップ
+
+```bash
+# バックエンドディレクトリに移動
+$ cd packages/backend
+
+# 依存関係のインストール
 $ npm install
 
 # 開発モードで実行
 $ npm run start:dev
-
-# 本番モードで実行
-$ npm run start:prod
 ```
 
-## Dockerを使用した実行方法
+#### 2. フロントエンドのセットアップ
 
 ```bash
-# Dockerコンテナを起動
-$ npm run docker:up
+# フロントエンドディレクトリに移動
+$ cd packages/frontend
 
-# Dockerコンテナを停止
-$ npm run docker:down
+# 依存関係のインストール
+$ npm install
 
-# Dockerコンテナを再起動
-$ npm run docker:restart
+# 開発モードで実行
+$ npm run dev
 ```
-
-## API ドキュメント
-
-サーバー起動後、次のURLでSwagger UIによるAPI仕様を確認できます：
-
-```
-http://localhost:3000/api
-```
-
-## テスト
-
-```bash
-# ユニットテスト
-$ npm run test
-
-# E2Eテスト
-$ npm run test:e2e:full
-
-# E2Eテスト（詳細手順）
-# 1. テスト用データベースを削除
-$ npm run test:e2e:clean
-
-# 2. テスト用データベースを作成
-$ npm run test:e2e:setup
-
-# 3. E2Eテストを実行
-$ npm run test:e2e
-
-# テストカバレッジ
-$ npm run test:cov
-```
-
-## プロジェクト構造
-
-```
-src/
-├── domain/           # ドメインモデル
-├── infrastructure/   # データベース、外部サービス
-├── presentation/     # コントローラー、DTOモデル
-└── usecase/          # ビジネスロジック
-```
-
-## ライセンス
-
-[MIT licensed](LICENSE)
 
 ## データベース設計
 
@@ -219,7 +217,7 @@ src/
    - パスワード：`postgres`
    - ポート：`5432`
 
-2. **src/app.module.ts**
+2. **packages/backend/src/app.module.ts**
    - TypeORMの設定
    - 環境変数から接続情報を取得（Docker環境変数経由）
    - エンティティの登録
@@ -228,33 +226,23 @@ src/
 
 テーブルとカラムの定義は、Domain層のエンティティクラスで行われています：
 
-1. **src/domain/users/entities/user.entity.ts**
+1. **packages/backend/src/domain/users/entities/user.entity.ts**
 
    - `users`テーブルの定義
    - カラム：`id`, `username`, `email`, `password`, `createdAt`, `updatedAt`
    - リレーション：Thread（1対多）, Post（1対多）
 
-2. **src/domain/threads/entities/thread.entity.ts**
+2. **packages/backend/src/domain/threads/entities/thread.entity.ts**
 
    - `threads`テーブルの定義
    - カラム：`id`, `title`, `description`, `createdAt`, `updatedAt`
    - リレーション：User（多対1）, Post（1対多）
 
-3. **src/domain/posts/entities/post.entity.ts**
+3. **packages/backend/src/domain/posts/entities/post.entity.ts**
    - `posts`テーブルの定義
    - カラム：`id`, `content`, `createdAt`, `updatedAt`
    - リレーション：User（多対1）, Thread（多対1）, Parent Post（多対1、自己参照）
 
-### マイグレーション
+## ライセンス
 
-データベースのマイグレーションは自動生成されたファイル **src/1747036646133-migrations.ts** に定義されています。このファイルには：
-
-- テーブル作成のSQLクエリ
-- 外部キー制約の定義
-- ロールバック用のdown関数
-
-### データベース初期化フロー
-
-1. Dockerコンテナ起動時にPostgreSQLサービスが初期化
-2. NestJSアプリケーション起動時にTypeORMがエンティティ定義に基づいてテーブルを作成/同期
-3. 本番環境では、明示的にマイグレーションを実行するフローを推奨
+[MIT licensed](LICENSE)
