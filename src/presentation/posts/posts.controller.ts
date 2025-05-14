@@ -30,7 +30,7 @@ export class PostsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '新規投稿を作成する' })
+  @ApiOperation({ summary: '新規投稿を作成する（返信の場合はparentIdを指定）' })
   @ApiResponse({
     status: 201,
     description: '投稿が正常に作成されました',
@@ -41,8 +41,13 @@ export class PostsController {
     @Body() createPostDto: CreatePostDto,
     @CurrentUser() user: any,
   ) {
-    createPostDto.userId = user.userId;
-    return this.postsService.createPost(createPostDto);
+    // 認証情報からユーザーIDを自動的に取得して設定
+    const postData = {
+      ...createPostDto,
+      userId: user.userId,
+    };
+
+    return this.postsService.createPost(postData);
   }
 
   @Get(':id')

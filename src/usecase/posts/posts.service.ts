@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IPostRepository } from '../../domain/posts/repositories/post.repository.interface';
 import { IUserRepository } from '../../domain/users/repositories/user.repository.interface';
 import { IThreadRepository } from '../../domain/threads/repositories/thread.repository.interface';
@@ -18,6 +23,11 @@ export class PostsService {
   ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<Post> {
+    // ユーザーIDが必要
+    if (!createPostDto.userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
     // ユーザーの存在確認
     const user = await this.userRepository.findById(createPostDto.userId);
     if (!user) {

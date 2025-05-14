@@ -1,4 +1,11 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  HttpCode,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -19,6 +26,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ summary: 'ユーザー認証を行う' })
   @ApiResponse({
     status: 200,

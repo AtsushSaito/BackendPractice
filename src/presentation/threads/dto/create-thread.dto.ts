@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateThreadDto {
@@ -11,9 +11,4 @@ export class CreateThreadDto {
   @IsString()
   @IsNotEmpty()
   description: string;
-
-  @ApiProperty({ description: '作成者のユーザーID', required: false })
-  @IsUUID()
-  @IsOptional()
-  userId?: string;
 }

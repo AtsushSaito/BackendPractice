@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IThreadRepository } from '../../domain/threads/repositories/thread.repository.interface';
 import { IUserRepository } from '../../domain/users/repositories/user.repository.interface';
 import { CreateThreadDto } from './dto/create-thread.dto';
@@ -14,6 +19,10 @@ export class ThreadsService {
   ) {}
 
   async createThread(createThreadDto: CreateThreadDto): Promise<Thread> {
+    if (!createThreadDto.userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
     const user = await this.userRepository.findById(createThreadDto.userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -39,4 +48,4 @@ export class ThreadsService {
     }
     return thread;
   }
-} 
+}

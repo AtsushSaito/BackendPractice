@@ -12,12 +12,10 @@ export class CreatePostDto {
   @IsNotEmpty()
   threadId: string;
 
-  @ApiProperty({ description: '作成者のユーザーID' })
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty({ description: '親投稿のID（返信の場合）', required: false })
+  @ApiProperty({
+    description: '親投稿のID（返信作成時に指定。通常の投稿では省略）',
+    required: false,
+  })
   @IsUUID()
   @IsOptional()
   parentId?: string;

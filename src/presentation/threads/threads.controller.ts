@@ -30,7 +30,7 @@ export class ThreadsController {
     @Body() createThreadDto: CreateThreadDto,
     @CurrentUser() user: any,
   ) {
-    // ユーザーIDをDTOに設定
+    // 認証情報からユーザーIDを自動的に取得して設定
     const threadData = {
       ...createThreadDto,
       userId: user.userId,

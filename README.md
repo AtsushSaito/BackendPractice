@@ -96,3 +96,111 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# スレッド掲示板API
+
+## プロジェクト概要
+
+このプロジェクトは、ユーザー管理、スレッド管理、投稿管理機能を持つ掲示板APIです。NestJSとTypeORMを使用して実装されています。
+
+## 技術スタック
+
+- NestJS: バックエンドフレームワーク
+- TypeORM: ORMライブラリ
+- PostgreSQL: データベース
+- JWT: 認証
+- Swagger: API文書化
+
+## 機能一覧
+
+1. ユーザー管理機能
+
+   - ユーザー登録
+   - ユーザー認証（ログイン）
+   - 認証ユーザー情報取得
+
+2. スレッド管理機能
+
+   - スレッド作成
+   - スレッド一覧取得
+   - スレッド詳細取得
+
+3. 投稿管理機能
+   - 投稿作成
+   - 投稿一覧取得（スレッド単位）
+   - 投稿への返信
+   - 返信一覧取得（投稿単位）
+
+## セットアップ
+
+```bash
+# リポジトリをクローン
+$ git clone https://github.com/yourusername/threadboard-api.git
+
+# 依存関係をインストール
+$ npm install
+
+# 開発モードで実行
+$ npm run start:dev
+
+# 本番モードで実行
+$ npm run start:prod
+```
+
+## Dockerを使用した実行方法
+
+```bash
+# Dockerコンテナを起動
+$ npm run docker:up
+
+# Dockerコンテナを停止
+$ npm run docker:down
+
+# Dockerコンテナを再起動
+$ npm run docker:restart
+```
+
+## API ドキュメント
+
+サーバー起動後、次のURLでSwagger UIによるAPI仕様を確認できます：
+
+```
+http://localhost:3000/api
+```
+
+## テスト
+
+```bash
+# ユニットテスト
+$ npm run test
+
+# E2Eテスト
+$ npm run test:e2e:full
+
+# E2Eテスト（詳細手順）
+# 1. テスト用データベースを削除
+$ npm run test:e2e:clean
+
+# 2. テスト用データベースを作成
+$ npm run test:e2e:setup
+
+# 3. E2Eテストを実行
+$ npm run test:e2e
+
+# テストカバレッジ
+$ npm run test:cov
+```
+
+## プロジェクト構造
+
+```
+src/
+├── domain/           # ドメインモデル
+├── infrastructure/   # データベース、外部サービス
+├── presentation/     # コントローラー、DTOモデル
+└── usecase/          # ビジネスロジック
+```
+
+## ライセンス
+
+[MIT licensed](LICENSE)

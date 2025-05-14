@@ -4,9 +4,13 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  UnauthorizedException,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { QueryFailedError } from 'typeorm';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -30,6 +34,38 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else {
         message = exceptionResponse.toString();
       }
+
+      // 認証関連のエラーメッセージを改善
+      if (exception instanceof UnauthorizedException) {
+        error = 'Unauthorized';
+        message = 'ログインが必要です。有効な認証トークンを提供してください。';
+      } else if (exception instanceof ForbiddenException) {
+        error = 'Forbidden';
+        message = 'このリソースにアクセスする権限がありません。';
+      } else if (exception instanceof NotFoundException) {
+        error = 'Not Found';
+        // メッセージをより具体的にする
+        if (message.includes('Thread')) {
+          message = '指定されたスレッドが見つかりません。';
+        } else if (message.includes('Post')) {
+          message = '指定された投稿が見つかりません。';
+        } else if (message.includes('User')) {
+          message = '指定されたユーザーが見つかりません。';
+        } else {
+          message = '指定されたリソースが見つかりません。';
+        }
+      }
+    }
+    // JWT関連のエラーを処理
+    else if (exception instanceof JsonWebTokenError) {
+      status = HttpStatus.UNAUTHORIZED;
+      error = 'Invalid Token';
+      message = '無効な認証トークンです。再ログインしてください。';
+    } else if (exception instanceof TokenExpiredError) {
+      status = HttpStatus.UNAUTHORIZED;
+      error = 'Token Expired';
+      message =
+        '認証トークンの有効期限が切れています。再ログインしてください。';
     }
     // TypeORM のユニーク制約違反エラー
     else if (exception instanceof QueryFailedError) {
