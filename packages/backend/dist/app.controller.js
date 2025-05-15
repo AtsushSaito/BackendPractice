@@ -12,27 +12,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
+const swagger_1 = require("@nestjs/swagger");
 let AppController = class AppController {
     appService;
     constructor(appService) {
         this.appService = appService;
     }
     getHello() {
-        return `
-    <h1>Thread Board API</h1>
-    <p>API documentation is available at <a href="/api">/api</a> (Swagger UI)</p>
-    <p>To access Swagger UI, go to <a href="/api">localhost:3000/api</a></p>
-    `;
+        return this.appService.getHello();
     }
 };
 exports.AppController = AppController;
 __decorate([
     (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: 'ヘルスチェックAPI' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'サーバーが正常に動作しています' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
 ], AppController.prototype, "getHello", null);
 exports.AppController = AppController = __decorate([
+    (0, swagger_1.ApiTags)('App'),
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [app_service_1.AppService])
 ], AppController);

@@ -1,5 +1,5 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from '../../usecase/users/users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '../../domain/users/entities/user.entity';
@@ -52,13 +52,26 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: '全ユーザー情報のリストを取得する' })
+  @ApiOperation({
+    summary:
+      'ユーザー情報のリストを取得する（オプションでユーザー名で検索可能）',
+  })
+  @ApiQuery({
+    name: 'username',
+    required: false,
+    description: 'フィルタリングするユーザー名',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'ユーザー情報の一覧を取得しました',
     type: [User],
   })
-  async getAllUsers() {
+  async getAllUsers(@Query('username') username?: string) {
+    if (username) {
+      const user = await this.usersService.findByUsername(username);
+      return user ? [user] : [];
+    }
     return this.usersService.getAllUsers();
   }
 

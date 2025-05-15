@@ -15,21 +15,19 @@ import {
 import Container from './components/ui/Container';
 
 export default function Home() {
+  // クライアントサイドでのみ初期化するため、初期値を明示的に設定
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // ローカルストレージからトークンを安全に取得する関数
   const getAuthToken = () => {
     try {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('token');
-        console.log(
-          'Home page checking auth token:',
-          token ? 'Token exists' : 'No token',
-        );
-        return token;
-      }
-      return null;
+      const token = localStorage.getItem('token');
+      console.log(
+        'Home page checking auth token:',
+        token ? 'Token exists' : 'No token',
+      );
+      return token;
     } catch (e) {
       console.error('Failed to get token from localStorage:', e);
       return null;
@@ -69,24 +67,6 @@ export default function Home() {
     );
   }, [isLoggedIn]);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ minHeight: '100vh' }}>
-        <Navbar />
-        <Container>
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            my={8}
-          >
-            <CircularProgress />
-          </Box>
-        </Container>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Navbar />
@@ -100,7 +80,16 @@ export default function Home() {
           スレッド掲示板
         </Typography>
 
-        {isLoggedIn ? (
+        {isLoading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            my={8}
+          >
+            <CircularProgress />
+          </Box>
+        ) : isLoggedIn ? (
           <Paper
             elevation={2}
             sx={{

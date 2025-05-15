@@ -56,31 +56,66 @@ export default function LoginForm() {
       setIsSubmitting(true);
       setError(null);
 
-      const response = await api.auth.login(formData);
-      console.log('Login response:', response);
+      try {
+        const response = await api.auth.login(formData);
+        console.log('Login response:', response);
 
-      // accessToken と access_token の両方のフォーマットに対応
-      const token = response.access_token || response.accessToken;
+        // accessToken と access_token の両方のフォーマットに対応
+        const token = response.access_token || response.accessToken;
 
-      if (token) {
-        // トークンをローカルストレージに保存
-        saveTokenAndNotify(token);
+        if (token) {
+          // トークンをローカルストレージに保存
+          saveTokenAndNotify(token);
 
-        // 少し待ってからリダイレクト（ストレージの更新を確実にするため）
-        setTimeout(() => {
-          // ホームページにリダイレクト
-          router.push('/');
-          router.refresh();
-        }, 100);
-      } else {
-        setError('ログインレスポンスからトークンが取得できませんでした。');
-        console.error('トークンが見つかりません:', response);
+          // 少し待ってからリダイレクト（ストレージの更新を確実にするため）
+          setTimeout(() => {
+            // ホームページにリダイレクト
+            router.push('/');
+            router.refresh();
+          }, 100);
+        } else {
+          setError('ログインレスポンスからトークンが取得できませんでした。');
+          console.error('トークンが見つかりません:', response);
+        }
+      } catch (err: any) {
+        console.error('ログインエラー:', err);
+
+        // エラーメッセージの内容から適切なメッセージを表示
+        if (err.message && err.message.includes('Invalid credentials')) {
+          // ユーザー名が存在するか確認
+          try {
+            const checkUser = await fetch(
+              `/api/users?username=${formData.username}`,
+              {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+
+            const userData = await checkUser.json();
+
+            // ユーザーが存在しない場合
+            if (!userData || userData.length === 0) {
+              setError(
+                `ユーザー名「${formData.username}」は登録されていません。アカウント登録が必要です。`,
+              );
+            } else {
+              // ユーザーは存在するがパスワードが間違っている場合
+              setError('パスワードが正しくありません。再度お試しください。');
+            }
+          } catch (checkErr) {
+            // ユーザー確認に失敗した場合は一般的なエラーメッセージ
+            setError(
+              'ログイン情報が正しくありません。ユーザー名とパスワードを確認してください。',
+            );
+          }
+        } else {
+          setError(
+            err.message ||
+              'ログインに失敗しました。認証情報を確認してください。',
+          );
+        }
       }
-    } catch (err: any) {
-      console.error('ログインエラー:', err);
-      setError(
-        err.message || 'ログインに失敗しました。認証情報を確認してください。',
-      );
     } finally {
       setIsSubmitting(false);
     }

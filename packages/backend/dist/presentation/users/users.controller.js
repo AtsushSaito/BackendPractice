@@ -26,7 +26,11 @@ let UsersController = class UsersController {
     async createUser(createUserDto) {
         return this.usersService.createUser(createUserDto);
     }
-    async getAllUsers() {
+    async getAllUsers(username) {
+        if (username) {
+            const user = await this.usersService.findByUsername(username);
+            return user ? [user] : [];
+        }
         return this.usersService.getAllUsers();
     }
     async getUser(id) {
@@ -80,14 +84,23 @@ __decorate([
 ], UsersController.prototype, "createUser", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({ summary: '全ユーザー情報のリストを取得する' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'ユーザー情報のリストを取得する（オプションでユーザー名で検索可能）',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'username',
+        required: false,
+        description: 'フィルタリングするユーザー名',
+        type: String,
+    }),
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'ユーザー情報の一覧を取得しました',
         type: [user_entity_1.User],
     }),
+    __param(0, (0, common_1.Query)('username')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "getAllUsers", null);
 __decorate([

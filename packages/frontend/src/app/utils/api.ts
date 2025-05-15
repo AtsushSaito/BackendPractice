@@ -8,25 +8,36 @@ function getSavedToken(): string | null {
     return null;
   }
   try {
-    return localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('localStorage内にトークンが見つかりません');
+      return null;
+    }
+    return token;
   } catch (e) {
     console.error('ローカルストレージからトークンの取得に失敗:', e);
     return null;
   }
 }
 
-// デバッグ用にトークンの状態をログに出力
+// トークン状態のデバッグログ出力用関数
 function logTokenState() {
-  if (typeof window !== 'undefined') {
-    try {
-      const token = localStorage.getItem('token');
-      console.log('Token state check:', token ? 'Token exists' : 'No token');
-      if (token) {
-        console.log('Token starts with:', token.substring(0, 15) + '...');
-      }
-    } catch (e) {
-      console.error('トークン状態のログ出力に失敗:', e);
+  if (typeof window === 'undefined') return;
+
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log(
+        'Token exists:',
+        token.substring(0, 15) + '...',
+        'Length:',
+        token.length,
+      );
+    } else {
+      console.warn('No token found in localStorage');
     }
+  } catch (e) {
+    console.error('Error checking token:', e);
   }
 }
 
@@ -52,7 +63,7 @@ export async function fetchApi<T>(
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
-  };
+  } as Record<string, string>;
 
   // JWTトークンがローカルストレージにあれば追加
   const token = getSavedToken();
@@ -63,11 +74,11 @@ export async function fetchApi<T>(
       : `Bearer ${token}`;
 
     console.log(
-      'Auth header set:',
+      `Request to ${endpoint} with Auth header:`,
       headers['Authorization'].substring(0, 20) + '...',
     );
   } else {
-    console.log('No token available for request to:', endpoint);
+    console.warn(`No auth token available for request to: ${endpoint}`);
   }
 
   // リクエスト情報をログに出力
@@ -159,6 +170,15 @@ export const api = {
 
     create: (data: any) => {
       console.log('Creating new post:', data);
+      // ここでトークンを再確認（デバッグ用）
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        console.log('トークンの存在:', token ? 'あり' : 'なし');
+        if (token) {
+          console.log('トークン先頭部分:', token.substring(0, 15) + '...');
+        }
+      }
+
       return fetchApi<any>('/api/posts', {
         method: 'POST',
         body: JSON.stringify(data),

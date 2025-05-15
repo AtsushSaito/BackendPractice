@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 import { Box, TextField, Paper, Typography, Alert } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -10,25 +10,46 @@ interface CreatePostFormProps {
   threadId: string;
   parentId?: string;
   onPostCreated: () => void;
+  isReply?: boolean;
 }
 
-const FormPaper = styled(Paper)(({ theme }) => ({
+// TypeScript対応のためのインターフェース
+interface FormPaperProps {
+  elevation?: number;
+}
+
+const FormPaper = styled(Paper)<FormPaperProps>(({ theme, elevation = 1 }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: (props) =>
-    props.elevation === 0
-      ? theme.palette.grey[50]
-      : theme.palette.background.paper,
+  backgroundColor:
+    elevation === 0 ? theme.palette.grey[50] : theme.palette.background.paper,
 }));
 
 export default function CreatePostForm({
   threadId,
   parentId,
   onPostCreated,
+  isReply,
 }: CreatePostFormProps) {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validThreadId, setValidThreadId] = useState(false);
+
+  // コンポーネント初期化時にスレッドIDをチェック
+  useEffect(() => {
+    if (!threadId) {
+      console.error('CreatePostFormにthreadIdが提供されていません');
+      setValidThreadId(false);
+      setError(
+        'スレッドIDが不足しています。投稿先のスレッドを特定できません。',
+      );
+    } else {
+      console.log(`CreatePostForm初期化 - スレッドID: ${threadId}`);
+      setValidThreadId(true);
+      setError(null);
+    }
+  }, [threadId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +59,16 @@ export default function CreatePostForm({
       return;
     }
 
+    // 再度スレッドIDをチェック
+    if (!threadId) {
+      console.error('スレッドIDが空です');
+      setError('スレッドIDが見つかりません。もう一度お試しください。');
+      return;
+    }
+
     try {
       console.log('投稿作成処理を開始...');
-      console.log(`スレッドID: ${threadId}`);
+      console.log(`スレッドID: ${threadId}, タイプ: ${typeof threadId}`);
       if (parentId) {
         console.log(`親投稿ID: ${parentId}`);
       }
@@ -48,21 +76,23 @@ export default function CreatePostForm({
       setIsSubmitting(true);
       const postData = {
         content,
-        threadId,
+        threadId: threadId.toString(), // 確実に文字列として送信
         parentId, // parentIdが存在する場合はこれが返信になる
       };
 
       console.log('送信データ:', postData);
-      console.log(
-        'トークンの確認:',
-        localStorage.getItem('token') ? 'あり' : 'なし',
-      );
 
       // トークンをチェック
       const token = localStorage.getItem('token');
-      if (token) {
-        console.log('トークン先頭:', token.substring(0, 20) + '...');
+      if (!token) {
+        console.error('トークンがありません - ログインが必要です');
+        setError('投稿するにはログインが必要です。');
+        setIsSubmitting(false);
+        return;
       }
+
+      console.log('トークン確認:', 'あり', '長さ:', token.length);
+      console.log('トークン先頭:', token.substring(0, 20) + '...');
 
       console.log('API呼び出し前...');
       await api.posts.create(postData);
@@ -82,7 +112,17 @@ export default function CreatePostForm({
         console.error('スタックトレース:', err.stack);
       }
 
-      setError(err.message || '投稿の作成に失敗しました。ログインが必要です。');
+      // エラーメッセージを適切に設定
+      if (
+        err.message.includes('Authorization') ||
+        err.message.includes('Unauthorized')
+      ) {
+        setError('ログインが必要です。認証情報が不足しています。');
+      } else if (err.message.includes('threadId')) {
+        setError('スレッドIDのエラー: 投稿先のスレッドが見つかりません。');
+      } else {
+        setError(err.message || '投稿の作成に失敗しました。');
+      }
     } finally {
       setIsSubmitting(false);
       console.log('投稿処理完了');
@@ -90,7 +130,7 @@ export default function CreatePostForm({
   };
 
   return (
-    <FormPaper elevation={parentId ? 0 : 1}>
+    <FormPaper elevation={parentId || isReply ? 0 : 1}>
       <Typography
         variant="h6"
         gutterBottom
@@ -99,7 +139,12 @@ export default function CreatePostForm({
           mb: 2,
         }}
       >
-        {parentId ? '返信を投稿' : '新しい投稿を作成'}
+        {parentId || isReply ? '返信を投稿' : '新しい投稿を作成'}
+        {threadId && (
+          <Typography variant="caption" display="block" color="text.secondary">
+            スレッドID: {threadId}
+          </Typography>
+        )}
       </Typography>
 
       {error && (
@@ -122,9 +167,12 @@ export default function CreatePostForm({
           variant="outlined"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder={parentId ? '返信内容を入力...' : '投稿内容を入力...'}
+          placeholder={
+            parentId || isReply ? '返信内容を入力...' : '投稿内容を入力...'
+          }
           required
           sx={{ mb: 2 }}
+          disabled={!validThreadId}
         />
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -134,9 +182,10 @@ export default function CreatePostForm({
             color="primary"
             size="medium"
             loading={isSubmitting}
+            disabled={!validThreadId}
             sx={{ minWidth: 120 }}
           >
-            {parentId ? '返信する' : '投稿する'}
+            {parentId || isReply ? '返信する' : '投稿する'}
           </LoadingButton>
         </Box>
       </Box>

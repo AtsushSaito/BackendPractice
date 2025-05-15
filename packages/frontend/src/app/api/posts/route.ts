@@ -94,17 +94,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // リクエストボディを取得
+    // リクエストボディを先に取得してチェック
     let body;
     try {
       body = await request.json();
       console.log('投稿リクエストボディ:', body);
+
+      // threadIdのバリデーション
+      if (!body.threadId) {
+        console.error('スレッドIDが不足しています:', body);
+        return NextResponse.json(
+          { message: 'threadId is required' },
+          { status: 400 },
+        );
+      }
+
+      console.log(`スレッドID確認: ${body.threadId}`);
     } catch (jsonError) {
       console.error('リクエストボディのパースに失敗:', jsonError);
       return NextResponse.json(
         { message: 'Invalid request body' },
         { status: 400 },
       );
+    }
+
+    // 認証ヘッダーが正しい形式かチェック
+    if (!token.startsWith('Bearer ')) {
+      console.error(
+        '認証ヘッダーが正しい形式ではありません: Bearer プレフィックスがありません',
+      );
+      // 自動修正を試みる
+      const fixedToken = `Bearer ${token}`;
+      console.log(`修正された認証ヘッダー: ${fixedToken.substring(0, 20)}...`);
+
+      // URLを構築してログ出力
+      const targetUrl = `${API_BASE_URL}/posts`;
+      console.log(`投稿リクエスト先URL: ${targetUrl}`);
+
+      // バックエンドAPIにリクエストを転送（修正したトークンで）
+      const response = await fetch(targetUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: fixedToken,
+        },
+        body: JSON.stringify(body),
+      });
+
+      console.log(`投稿レスポンスステータス: ${response.status}`);
+
+      // バックエンドからのレスポンスデータを取得
+      let data;
+      try {
+        data = await response.json();
+        console.log('投稿レスポンス:', data);
+      } catch (parseError) {
+        console.error('投稿レスポンスのパースに失敗:', parseError);
+        const text = await response.text().catch(() => 'レスポンス本文なし');
+        console.log('レスポンス本文:', text);
+        return NextResponse.json(
+          {
+            message: 'レスポンスの解析に失敗しました',
+            error: parseError.toString(),
+            responseText: text,
+          },
+          { status: 500 },
+        );
+      }
+
+      if (!response.ok) {
+        console.error(
+          `投稿エラー - ステータス: ${response.status}、メッセージ:`,
+          data,
+        );
+        return NextResponse.json(data, { status: response.status });
+      }
+
+      console.log('投稿作成成功');
+      return NextResponse.json(data);
     }
 
     // URLを構築してログ出力

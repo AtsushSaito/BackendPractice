@@ -1,17 +1,17 @@
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
 
 # rimrafをグローバルにインストール
-RUN npm ci && npm install -g rimraf
+RUN npm install && npm install -g rimraf
 
 COPY . .
 
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 

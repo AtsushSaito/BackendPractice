@@ -133,6 +133,18 @@ $ docker-compose down --remove-orphans
 
 - `packages/backend`: NestJSで実装されたバックエンドAPI
 - `packages/frontend`: Next.jsで実装されたフロントエンドアプリケーション
+- `docs/chat_history`: プロジェクト開発中のチャット履歴と開発の記録
+
+## 開発履歴
+
+プロジェクト開発中のチャット履歴は `docs/chat_history` ディレクトリに保存されています。このディレクトリには以下のファイルが含まれています：
+
+- `README.md`: チャット履歴に関する説明
+- `chat_history.md`: 開発中の会話を構造化したサマリー
+- `chat_history.json`: AIとの会話の生データ
+- `chat_history_raw.txt`: チャットデータの抽出元と概要
+
+これらのファイルは、プロジェクトの開発プロセス、特に認証機能の実装、エラーの修正、UIの改善などについて理解するのに役立ちます。
 
 ## 機能一覧
 

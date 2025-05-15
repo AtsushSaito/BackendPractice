@@ -23,7 +23,12 @@ import Container from '../../components/ui/Container';
 
 export default function ThreadDetailPage() {
   const params = useParams();
-  const threadId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const rawThreadId = Array.isArray(params.id) ? params.id[0] : params.id;
+
+  // スレッドIDを確実に文字列として取得し、デバッグ出力
+  const threadId = String(rawThreadId);
+  console.log(`スレッドID取得: ${threadId}, タイプ: ${typeof threadId}`);
+
   const postListRef = useRef<{ handlePostCreated: () => Promise<void> } | null>(
     null,
   );
@@ -192,15 +197,29 @@ export default function ThreadDetailPage() {
                 </Typography>
               </>
             )}
+            <Divider orientation="vertical" flexItem />
+            <Typography
+              variant="body2"
+              component="span"
+              sx={{ display: 'flex', alignItems: 'center' }}
+            >
+              スレッドID: {threadId}
+            </Typography>
           </Box>
         </Paper>
 
         {isLoggedIn ? (
           <Box sx={{ mb: 4 }}>
-            <CreatePostForm
-              threadId={threadId}
-              onPostCreated={handlePostCreated}
-            />
+            {threadId ? (
+              <CreatePostForm
+                threadId={threadId}
+                onPostCreated={handlePostCreated}
+              />
+            ) : (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                スレッドIDが取得できないため投稿できません
+              </Alert>
+            )}
           </Box>
         ) : (
           <Alert

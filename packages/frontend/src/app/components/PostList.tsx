@@ -17,12 +17,30 @@ const PostList = forwardRef<
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // デバッグ用：マウント時にスレッドIDを確認
+  useEffect(() => {
+    if (!threadId) {
+      console.warn('PostList: threadIdが提供されていません');
+    } else {
+      console.log(`PostList: threadId = ${threadId}`);
+    }
+  }, [threadId]);
+
   // 新しい投稿が作成された後に投稿リストを更新するためのコールバック
   const handlePostCreated = async () => {
     try {
       setIsLoading(true);
       const postsData = await api.posts.getByThreadId(threadId);
-      const topLevelPosts = postsData.filter((post) => !post.parentId);
+
+      // 厳密に親投稿を持たない投稿だけをフィルタリング
+      // 複数の条件で確実に返信でないことを確認
+      const topLevelPosts = postsData.filter(
+        (post) => !post.parentId && !post.parent && !post.parent?.id,
+      );
+
+      console.log(
+        `スレッドの投稿数: ${postsData.length}, トップレベル投稿: ${topLevelPosts.length}`,
+      );
       setPosts(topLevelPosts);
     } catch (err) {
       console.error('投稿更新エラー:', err);
@@ -41,7 +59,16 @@ const PostList = forwardRef<
       try {
         setIsLoading(true);
         const postsData = await api.posts.getByThreadId(threadId);
-        const topLevelPosts = postsData.filter((post) => !post.parentId);
+
+        // 厳密に親投稿を持たない投稿だけをフィルタリング
+        // 複数の条件で確実に返信でないことを確認
+        const topLevelPosts = postsData.filter(
+          (post) => !post.parentId && !post.parent && !post.parent?.id,
+        );
+
+        console.log(
+          `スレッドの投稿数: ${postsData.length}, トップレベル投稿: ${topLevelPosts.length}`,
+        );
         setPosts(topLevelPosts);
         setError(null);
       } catch (err) {
@@ -82,6 +109,7 @@ const PostList = forwardRef<
             key={post.id}
             post={post}
             onPostCreated={handlePostCreated}
+            fallbackThreadId={threadId}
           />
         ))}
       </div>

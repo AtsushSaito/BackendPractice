@@ -20,7 +20,7 @@ services:
     command: npm run start:dev
 
   frontend:
-    image: node:18-alpine
+    image: node:20-alpine
     ports:
       - '3001:3001'
     volumes:

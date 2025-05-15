@@ -28,12 +28,13 @@ import { AppService } from './app.service';
       entities: [User, Thread, Post],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
-    UsersModule, // Presentation層のユーザーモジュールをインポート
-    ThreadsModule, // Presentation層のスレッドモジュールをインポート
-    PostsModule, // Presentation層の投稿モジュールをインポート
-    AuthModule, // Presentation層の認証モジュールをインポート
+    UsersModule,
+    ThreadsModule,
+    PostsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+// force touch
