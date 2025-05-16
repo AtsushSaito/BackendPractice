@@ -1,10 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../utils/api';
-import { Box, TextField, Paper, Typography, Alert } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Paper,
+  Typography,
+  Alert,
+  Button,
+  IconButton,
+  Stack,
+} from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { styled } from '@mui/material/styles';
+import ImageIcon from '@mui/icons-material/Image';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface CreatePostFormProps {
   threadId: string;
@@ -18,12 +29,31 @@ interface FormPaperProps {
   elevation?: number;
 }
 
+interface ImageUploadInfo {
+  id: string;
+  url: string;
+  filename: string;
+}
+
 const FormPaper = styled(Paper)<FormPaperProps>(({ theme, elevation = 1 }) => ({
   padding: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
   backgroundColor:
     elevation === 0 ? theme.palette.grey[50] : theme.palette.background.paper,
 }));
+
+const ImagePreview = styled('img')({
+  maxWidth: '100%',
+  maxHeight: '200px',
+  objectFit: 'contain',
+  marginTop: '8px',
+  marginBottom: '8px',
+  borderRadius: '4px',
+});
+
+const HiddenInput = styled('input')({
+  display: 'none',
+});
 
 export default function CreatePostForm({
   threadId,
@@ -35,6 +65,10 @@ export default function CreatePostForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validThreadId, setValidThreadId] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<ImageUploadInfo[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
   // コンポーネント初期化時にスレッドIDをチェック
   useEffect(() => {
@@ -50,6 +84,62 @@ export default function CreatePostForm({
       setError(null);
     }
   }, [threadId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    const file = e.target.files[0];
+
+    try {
+      setIsUploading(true);
+      setError(null);
+
+      console.log('画像アップロード開始:', file.name);
+      const result = await api.images.upload(file);
+      console.log('画像アップロード成功:', result);
+
+      const newImage = {
+        id: Date.now().toString(),
+        url: result.location,
+        filename: file.name,
+      };
+
+      setUploadedImages([...uploadedImages, newImage]);
+
+      // カーソル位置にURLを挿入
+      if (textFieldRef.current) {
+        const cursorPosition =
+          textFieldRef.current.selectionStart || content.length;
+        const textBefore = content.substring(0, cursorPosition);
+        const textAfter = content.substring(cursorPosition);
+
+        // 画像のMarkdown記法を挿入
+        const imageMarkdown = `![${file.name}](${result.location})`;
+        const newContent = textBefore + imageMarkdown + textAfter;
+
+        setContent(newContent);
+      }
+    } catch (err: any) {
+      console.error('画像アップロードエラー:', err);
+      setError(
+        `画像のアップロードに失敗しました: ${err.message || 'エラーが発生しました'}`,
+      );
+    } finally {
+      setIsUploading(false);
+      // ファイル選択をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleImageButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,6 +191,7 @@ export default function CreatePostForm({
       // 投稿成功後にフォームをリセット
       setContent('');
       setError(null);
+      setUploadedImages([]);
 
       // 親コンポーネントに投稿が作成されたことを通知
       onPostCreated();
@@ -172,22 +263,58 @@ export default function CreatePostForm({
           }
           required
           sx={{ mb: 2 }}
-          disabled={!validThreadId}
+          disabled={!validThreadId || isSubmitting}
+          inputRef={textFieldRef}
         />
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <HiddenInput
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          ref={fileInputRef}
+          disabled={!validThreadId || isSubmitting || isUploading}
+        />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Button
+            startIcon={<ImageIcon />}
+            onClick={handleImageButtonClick}
+            disabled={!validThreadId || isSubmitting || isUploading}
+            variant="outlined"
+            color="primary"
+            size="small"
+          >
+            {isUploading ? '画像アップロード中...' : '画像を追加'}
+          </Button>
+
           <LoadingButton
             type="submit"
             variant="contained"
             color="primary"
             size="medium"
             loading={isSubmitting}
-            disabled={!validThreadId}
+            disabled={!validThreadId || isUploading}
             sx={{ minWidth: 120 }}
           >
             {parentId || isReply ? '返信する' : '投稿する'}
           </LoadingButton>
         </Box>
+
+        {uploadedImages.length > 0 && (
+          <Stack spacing={1} sx={{ mt: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              アップロードした画像がコンテンツに挿入されています
+            </Typography>
+            {uploadedImages.map((image) => (
+              <Box
+                key={image.id}
+                sx={{ position: 'relative', display: 'inline-block' }}
+              >
+                <ImagePreview src={image.url} alt={image.filename} />
+              </Box>
+            ))}
+          </Stack>
+        )}
       </Box>
     </FormPaper>
   );

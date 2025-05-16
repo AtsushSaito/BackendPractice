@@ -8,6 +8,8 @@ import { Collapse, Box, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface PostItemProps {
   post: Post;
@@ -142,7 +144,31 @@ export default function PostItem({
       className={`border ${isReply ? 'border-gray-200 ml-4 border-l-4 pl-2' : 'border-gray-300'} p-4 rounded mb-4`}
     >
       <div className="mb-2">
-        <p className="whitespace-pre-wrap">{post.content}</p>
+        <div className="whitespace-pre-wrap">
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              img: ({ node, ...props }) => (
+                <img 
+                  {...props} 
+                  style={{ 
+                    maxWidth: '100%',
+                    maxHeight: '400px',
+                    objectFit: 'contain',
+                    margin: '8px 0'
+                  }} 
+                  alt={props.alt || "投稿画像"}
+                  loading="lazy"
+                />
+              ),
+              p: ({node, ...props}) => (
+                <p {...props} style={{ marginBottom: '0.5rem' }} />
+              )
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
+        </div>
         <div className="mt-2 text-sm text-gray-500">
           {post.user?.username && `${post.user.username} | `}
           {new Date(post.createdAt).toLocaleString()}

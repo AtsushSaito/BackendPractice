@@ -141,6 +141,62 @@ export async function fetchApi<T>(
   }
 }
 
+// FormDataを使ったファイルアップロード用関数
+export async function uploadFile<T>(file: File): Promise<T> {
+  console.log(
+    `Uploading file: ${file.name}, size: ${file.size}bytes, type: ${file.type}`,
+  );
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const isClient = typeof window !== 'undefined';
+
+  // トークンの取得
+  let token = null;
+  if (isClient) {
+    token = getSavedToken();
+    if (!token) {
+      console.warn('No auth token available for file upload');
+      throw new Error('Authentication required for file upload');
+    }
+  }
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = token.startsWith('Bearer ')
+      ? token
+      : `Bearer ${token}`;
+  }
+
+  const response = await fetch('/api/images/upload', {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorData = {};
+    try {
+      errorData = await response.json();
+      console.error('File upload error:', errorData);
+    } catch (e) {
+      console.error('Failed to parse error response for file upload:', e);
+      const text = await response.text().catch(() => 'No response body');
+      console.error('Raw error response for file upload:', text);
+      errorData = { message: text };
+    }
+
+    throw new Error(
+      errorData.message || `File upload error with status: ${response.status}`,
+    );
+  }
+
+  const data = await response.json();
+  console.log('File upload response:', data);
+  return data;
+}
+
 // 各APIエンドポイントに対応する関数
 export const api = {
   // スレッド関連
@@ -196,6 +252,14 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       });
+    },
+  },
+
+  // 画像関連
+  images: {
+    upload: (file: File) => {
+      console.log('Uploading image:', file.name);
+      return uploadFile<{ message: string; location: string }>(file);
     },
   },
 

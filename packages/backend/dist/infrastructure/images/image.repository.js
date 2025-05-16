@@ -42,11 +42,15 @@ let ImageRepository = class ImageRepository {
             Key: key,
             Body: file.buffer,
             ContentType: file.mimetype,
-            ACL: 'public-read',
         })
             .promise();
+        const signedUrl = this.s3.getSignedUrl('getObject', {
+            Bucket: this.bucketName,
+            Key: key,
+            Expires: 3600 * 24 * 7,
+        });
         return {
-            location: uploadResult.Location,
+            location: signedUrl,
             key: uploadResult.Key,
         };
     }
@@ -64,15 +68,36 @@ let ImageRepository = class ImageRepository {
         return this.imageRepository.save(image);
     }
     async findByPostId(postId) {
-        return this.imageRepository.find({
+        const images = await this.imageRepository.find({
             where: { post: { id: postId } },
             order: { position: 'ASC' },
         });
+        return Promise.all(images.map(async (image) => {
+            const key = image.url.split('/').pop();
+            if (key) {
+                const signedUrl = this.s3.getSignedUrl('getObject', {
+                    Bucket: this.bucketName,
+                    Key: key,
+                    Expires: 3600 * 24 * 7,
+                });
+                image.url = signedUrl;
+            }
+            return image;
+        }));
     }
     async findById(id) {
         const image = await this.imageRepository.findOne({ where: { id } });
         if (!image) {
             throw new common_1.NotFoundException(`Image with ID ${id} not found`);
+        }
+        const key = image.url.split('/').pop();
+        if (key) {
+            const signedUrl = this.s3.getSignedUrl('getObject', {
+                Bucket: this.bucketName,
+                Key: key,
+                Expires: 3600 * 24 * 7,
+            });
+            image.url = signedUrl;
         }
         return image;
     }

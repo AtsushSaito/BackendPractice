@@ -32,18 +32,26 @@ export class ImageRepository implements IImageRepository {
   ): Promise<{ location: string; key: string }> {
     const key = `${uuidv4()}-${file.originalname}`;
 
+    // ファイルをS3にアップロード
     const uploadResult = await this.s3
       .upload({
         Bucket: this.bucketName,
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ACL: 'public-read',
       })
       .promise();
 
+    // 署名付きURLを生成（7日間有効）
+    const signedUrl = this.s3.getSignedUrl('getObject', {
+      Bucket: this.bucketName,
+      Key: key,
+      Expires: 3600 * 24 * 7, // 7日間有効
+    });
+
+    // 署名付きURLを返す
     return {
-      location: uploadResult.Location,
+      location: signedUrl,
       key: uploadResult.Key,
     };
   }
@@ -67,10 +75,26 @@ export class ImageRepository implements IImageRepository {
   }
 
   async findByPostId(postId: string): Promise<Image[]> {
-    return this.imageRepository.find({
+    const images = await this.imageRepository.find({
       where: { post: { id: postId } },
       order: { position: 'ASC' },
     });
+
+    // 各画像に署名付きURLを生成
+    return Promise.all(
+      images.map(async (image) => {
+        const key = image.url.split('/').pop();
+        if (key) {
+          const signedUrl = this.s3.getSignedUrl('getObject', {
+            Bucket: this.bucketName,
+            Key: key,
+            Expires: 3600 * 24 * 7, // 7日間有効
+          });
+          image.url = signedUrl;
+        }
+        return image;
+      }),
+    );
   }
 
   async findById(id: string): Promise<Image> {
@@ -78,6 +102,18 @@ export class ImageRepository implements IImageRepository {
     if (!image) {
       throw new NotFoundException(`Image with ID ${id} not found`);
     }
+
+    // 署名付きURLを生成
+    const key = image.url.split('/').pop();
+    if (key) {
+      const signedUrl = this.s3.getSignedUrl('getObject', {
+        Bucket: this.bucketName,
+        Key: key,
+        Expires: 3600 * 24 * 7, // 7日間有効
+      });
+      image.url = signedUrl;
+    }
+
     return image;
   }
 

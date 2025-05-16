@@ -10,6 +10,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "rootDir": "./src",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -17,7 +18,8 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
-  "exclude": ["node_modules", "node_modules/aws-sdk/**/*.d.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "node_modules/aws-sdk/**/*.d.ts", "dist"]
 }
