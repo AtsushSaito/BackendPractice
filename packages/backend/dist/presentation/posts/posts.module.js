@@ -14,15 +14,21 @@ const posts_service_1 = require("../../usecase/posts/posts.service");
 const post_entity_1 = require("../../domain/posts/entities/post.entity");
 const thread_entity_1 = require("../../domain/threads/entities/thread.entity");
 const user_entity_1 = require("../../domain/users/entities/user.entity");
+const image_entity_1 = require("../../domain/images/entities/image.entity");
 const post_repository_1 = require("../../infrastructure/posts/post.repository");
 const thread_repository_1 = require("../../infrastructure/threads/thread.repository");
 const user_repository_1 = require("../../infrastructure/users/user.repository");
+const image_repository_1 = require("../../infrastructure/images/image.repository");
+const images_module_1 = require("../images/images.module");
 let PostsModule = class PostsModule {
 };
 exports.PostsModule = PostsModule;
 exports.PostsModule = PostsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([post_entity_1.Post, thread_entity_1.Thread, user_entity_1.User])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([post_entity_1.Post, thread_entity_1.Thread, user_entity_1.User, image_entity_1.Image]),
+            images_module_1.ImagesModule,
+        ],
         controllers: [posts_controller_1.PostsController],
         providers: [
             posts_service_1.PostsService,
@@ -37,6 +43,10 @@ exports.PostsModule = PostsModule = __decorate([
             {
                 provide: 'IUserRepository',
                 useClass: user_repository_1.UserRepository,
+            },
+            {
+                provide: 'IImageRepository',
+                useClass: image_repository_1.ImageRepository,
             },
         ],
         exports: [posts_service_1.PostsService],

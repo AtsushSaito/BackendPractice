@@ -39,6 +39,9 @@ let UsersService = class UsersService {
     async getAllUsers() {
         return this.userRepository.findAll();
     }
+    async findByUsername(username) {
+        return this.userRepository.findByUsername(username);
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

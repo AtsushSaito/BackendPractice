@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Docker環境では下記を使用
-const API_BASE_URL = 'http://backend:3000';
-// ローカル開発環境ではlocalhostを使用
-// const API_BASE_URL = 'http://localhost:3000';
+// ローカル環境ではlocalhostを使用
+const API_BASE_URL = 'http://localhost:3000';
 
 // 投稿一覧取得（スレッドIDでフィルタリングできる）
 export async function GET(request: NextRequest) {

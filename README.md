@@ -109,20 +109,37 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 - バックエンドAPI: http://localhost:3000
 - Swagger API ドキュメント: http://localhost:3000/api
 
-## Docker利用方法
+## 構成について
+
+このプロジェクトは以下の構成になっています：
+
+- バックエンド: packages/backend内のdocker-compose.ymlでDocker上で動作
+- フロントエンド: packages/frontendディレクトリでNext.jsを直接実行
+
+## 実行方法
 
 ```bash
-# システムを起動するには
-$ docker-compose up
+# バックエンドを起動するには（Docker上）
+$ npm run backend
 
-# システムを停止するには
-$ docker-compose down
+# フロントエンドを起動するには（直接実行）
+$ npm run frontend
+
+# または両方同時に起動（異なるターミナルで）
+$ npm run dev
+```
+
+## Docker利用方法（バックエンドのみ）
+
+```bash
+# バックエンドシステムを起動するには
+$ npm run docker:up
+
+# バックエンドシステムを停止するには
+$ npm run docker:down
 
 # 変更を加えた後に再ビルドして起動するには
-$ docker-compose up --build
-
-# 使用しなくなったコンテナを含めて完全に停止するには
-$ docker-compose down --remove-orphans
+$ npm run docker:restart
 ```
 
 掲示板システムではアカウント登録とログイン後に、スレッドの作成や投稿が可能です。投稿への返信もサポートされています。

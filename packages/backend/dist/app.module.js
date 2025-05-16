@@ -14,9 +14,11 @@ const users_module_1 = require("./presentation/users/users.module");
 const threads_module_1 = require("./presentation/threads/threads.module");
 const posts_module_1 = require("./presentation/posts/posts.module");
 const auth_module_1 = require("./presentation/auth/auth.module");
+const images_module_1 = require("./presentation/images/images.module");
 const user_entity_1 = require("./domain/users/entities/user.entity");
 const thread_entity_1 = require("./domain/threads/entities/thread.entity");
 const post_entity_1 = require("./domain/posts/entities/post.entity");
+const image_entity_1 = require("./domain/images/entities/image.entity");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 let AppModule = class AppModule {
@@ -35,13 +37,14 @@ exports.AppModule = AppModule = __decorate([
                 username: process.env.DATABASE_USERNAME || 'postgres',
                 password: process.env.DATABASE_PASSWORD || 'postgres',
                 database: process.env.DATABASE_NAME || 'threadboard',
-                entities: [user_entity_1.User, thread_entity_1.Thread, post_entity_1.Post],
+                entities: [user_entity_1.User, thread_entity_1.Thread, post_entity_1.Post, image_entity_1.Image],
                 synchronize: process.env.NODE_ENV !== 'production',
             }),
             users_module_1.UsersModule,
             threads_module_1.ThreadsModule,
             posts_module_1.PostsModule,
             auth_module_1.AuthModule,
+            images_module_1.ImagesModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

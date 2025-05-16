@@ -13,6 +13,7 @@ exports.Post = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("../../users/entities/user.entity");
 const thread_entity_1 = require("../../threads/entities/thread.entity");
+const image_entity_1 = require("../../images/entities/image.entity");
 const swagger_1 = require("@nestjs/swagger");
 let Post = class Post {
     id;
@@ -21,6 +22,7 @@ let Post = class Post {
     thread;
     parent;
     replies;
+    images;
     createdAt;
     updatedAt;
 };
@@ -35,8 +37,8 @@ __decorate([
 ], Post.prototype, "id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: '投稿内容',
-        example: 'これは投稿の内容です。プログラミングについて議論しましょう。',
+        description: '投稿内容（HTML形式を含む）',
+        example: '<p>これは投稿の内容です。<strong>プログラミング</strong>について議論しましょう。</p>',
     }),
     (0, typeorm_1.Column)('text'),
     __metadata("design:type", String)
@@ -74,6 +76,14 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => Post, (post) => post.parent),
     __metadata("design:type", Array)
 ], Post.prototype, "replies", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: '投稿に関連する画像',
+        type: [image_entity_1.Image],
+    }),
+    (0, typeorm_1.OneToMany)(() => image_entity_1.Image, (image) => image.post, { cascade: true }),
+    __metadata("design:type", Array)
+], Post.prototype, "images", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: '作成日時',

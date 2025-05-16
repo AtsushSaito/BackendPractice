@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Thread } from '../../threads/entities/thread.entity';
+import { Image } from '../../images/entities/image.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('posts')
@@ -21,8 +22,8 @@ export class Post {
   id: string;
 
   @ApiProperty({
-    description: '投稿内容',
-    example: 'これは投稿の内容です。プログラミングについて議論しましょう。',
+    description: '投稿内容（HTML形式を含む）',
+    example: '<p>これは投稿の内容です。<strong>プログラミング</strong>について議論しましょう。</p>',
   })
   @Column('text')
   content: string;
@@ -55,6 +56,13 @@ export class Post {
   })
   @OneToMany(() => Post, (post) => post.parent)
   replies: Post[];
+
+  @ApiProperty({
+    description: '投稿に関連する画像',
+    type: [Image],
+  })
+  @OneToMany(() => Image, (image) => image.post, { cascade: true })
+  images: Image[];
 
   @ApiProperty({
     description: '作成日時',

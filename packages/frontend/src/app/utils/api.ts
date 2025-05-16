@@ -41,12 +41,18 @@ function logTokenState() {
   }
 }
 
-// API初期化時にトークン状態をログに出力
+// クライアントサイドでのみ実行される初期化関数
+let initialized = false;
 if (typeof window !== 'undefined') {
-  console.log('API client initialized, checking token...');
-  setTimeout(() => {
-    logTokenState();
-  }, 100);
+  // ビルド時/サーバー側では実行せず、クライアントでのみ実行
+  if (!initialized) {
+    initialized = true;
+    // setTimeout をネストして処理順序を確実にする
+    setTimeout(() => {
+      console.log('API client initialized, checking token...');
+      logTokenState();
+    }, 0);
+  }
 }
 
 // APIリクエスト用の関数を定義
@@ -56,8 +62,13 @@ export async function fetchApi<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  // リクエスト前にトークン状態をログに出力
-  logTokenState();
+  // サーバーサイドレンダリング時は一部の処理をスキップ
+  const isClient = typeof window !== 'undefined';
+
+  // リクエスト前にトークン状態をログに出力（クライアントサイドのみ）
+  if (isClient) {
+    logTokenState();
+  }
 
   // デフォルトのヘッダーを設定
   const headers = {
@@ -65,20 +76,22 @@ export async function fetchApi<T>(
     ...options.headers,
   } as Record<string, string>;
 
-  // JWTトークンがローカルストレージにあれば追加
-  const token = getSavedToken();
-  if (token) {
-    // 'Bearer 'プレフィックスを確認して、なければ追加する
-    headers['Authorization'] = token.startsWith('Bearer ')
-      ? token
-      : `Bearer ${token}`;
+  // JWTトークンがローカルストレージにあれば追加（クライアントサイドのみ）
+  if (isClient) {
+    const token = getSavedToken();
+    if (token) {
+      // 'Bearer 'プレフィックスを確認して、なければ追加する
+      headers['Authorization'] = token.startsWith('Bearer ')
+        ? token
+        : `Bearer ${token}`;
 
-    console.log(
-      `Request to ${endpoint} with Auth header:`,
-      headers['Authorization'].substring(0, 20) + '...',
-    );
-  } else {
-    console.warn(`No auth token available for request to: ${endpoint}`);
+      console.log(
+        `Request to ${endpoint} with Auth header:`,
+        headers['Authorization'].substring(0, 20) + '...',
+      );
+    } else {
+      console.warn(`No auth token available for request to: ${endpoint}`);
+    }
   }
 
   // リクエスト情報をログに出力

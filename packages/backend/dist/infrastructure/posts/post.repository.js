@@ -29,13 +29,13 @@ let PostRepository = class PostRepository {
     async findById(id) {
         return this.repository.findOne({
             where: { id },
-            relations: ['user', 'thread', 'parent'],
+            relations: ['user', 'thread', 'parent', 'images'],
         });
     }
     async findByThreadId(threadId) {
         return this.repository.find({
             where: { thread: { id: threadId } },
-            relations: ['user', 'parent'],
+            relations: ['user', 'parent', 'images'],
             order: {
                 createdAt: 'ASC',
             },
@@ -44,7 +44,7 @@ let PostRepository = class PostRepository {
     async findByParentId(parentId) {
         return this.repository.find({
             where: { parent: { id: parentId } },
-            relations: ['user'],
+            relations: ['user', 'images'],
             order: {
                 createdAt: 'ASC',
             },

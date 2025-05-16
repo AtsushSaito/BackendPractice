@@ -7,4 +7,5 @@ export declare class UsersService {
     createUser(createUserDto: CreateUserDto): Promise<User>;
     getUser(id: string): Promise<User>;
     getAllUsers(): Promise<User[]>;
+    findByUsername(username: string): Promise<User | null>;
 }

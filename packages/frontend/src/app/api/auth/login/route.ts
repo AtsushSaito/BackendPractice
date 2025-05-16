@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Docker環境では下記を使用
-const API_BASE_URL = 'http://backend:3000';
-// ローカル開発環境ではlocalhostを使用
-// const API_BASE_URL = 'http://localhost:3000';
+// ローカル環境ではlocalhostを使用
+const API_BASE_URL = 'http://localhost:3000';
 
 export async function POST(request: NextRequest) {
   try {

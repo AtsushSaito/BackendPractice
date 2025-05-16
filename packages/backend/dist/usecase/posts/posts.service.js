@@ -18,10 +18,12 @@ let PostsService = class PostsService {
     postRepository;
     userRepository;
     threadRepository;
-    constructor(postRepository, userRepository, threadRepository) {
+    imageRepository;
+    constructor(postRepository, userRepository, threadRepository, imageRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.threadRepository = threadRepository;
+        this.imageRepository = imageRepository;
     }
     async createPost(createPostDto) {
         if (!createPostDto.userId) {
@@ -49,7 +51,17 @@ let PostsService = class PostsService {
             thread: thread,
             parent: parentPost,
         });
-        return post;
+        if (createPostDto.images && createPostDto.images.length > 0) {
+            for (let i = 0; i < createPostDto.images.length; i++) {
+                const imageDto = createPostDto.images[i];
+                await this.imageRepository.create({
+                    ...imageDto,
+                    postId: post.id,
+                    position: imageDto.position || i,
+                });
+            }
+        }
+        return this.getPostById(post.id);
     }
     async getPostById(id) {
         const post = await this.postRepository.findById(id);
@@ -86,6 +98,10 @@ let PostsService = class PostsService {
         if (!post) {
             throw new common_1.NotFoundException('Post not found');
         }
+        const images = await this.imageRepository.findByPostId(id);
+        for (const image of images) {
+            await this.imageRepository.remove(image.id);
+        }
         await this.postRepository.delete(id);
     }
 };
@@ -95,6 +111,7 @@ exports.PostsService = PostsService = __decorate([
     __param(0, (0, common_1.Inject)('IPostRepository')),
     __param(1, (0, common_1.Inject)('IUserRepository')),
     __param(2, (0, common_1.Inject)('IThreadRepository')),
-    __metadata("design:paramtypes", [Object, Object, Object])
+    __param(3, (0, common_1.Inject)('IImageRepository')),
+    __metadata("design:paramtypes", [Object, Object, Object, Object])
 ], PostsService);
 //# sourceMappingURL=posts.service.js.map

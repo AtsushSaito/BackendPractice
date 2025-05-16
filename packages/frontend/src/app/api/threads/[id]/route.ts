@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Docker環境では下記を使用
-const API_BASE_URL = 'http://backend:3000';
-// ローカル開発環境ではlocalhostを使用
-// const API_BASE_URL = 'http://localhost:3000';
+// ローカル環境ではlocalhostを使用
+const API_BASE_URL = 'http://localhost:3000';
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   try {
-    const { id } = params;
+    // Next.js 15では動的パラメータは非同期なのでawaitする
+    const { id } = await params;
     console.log(`スレッド詳細取得リクエスト - ID: ${id}`);
 
     // 認証ヘッダーを取得

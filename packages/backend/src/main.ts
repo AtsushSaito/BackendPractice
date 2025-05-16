@@ -36,6 +36,7 @@ async function bootstrap() {
     .addTag('auth')
     .addTag('threads')
     .addTag('posts')
+    .addTag('ファイル')
     .addBearerAuth()
     .build();
 

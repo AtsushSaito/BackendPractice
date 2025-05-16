@@ -19,14 +19,14 @@ export class PostRepository implements IPostRepository {
   async findById(id: string): Promise<Post | null> {
     return this.repository.findOne({
       where: { id },
-      relations: ['user', 'thread', 'parent'],
+      relations: ['user', 'thread', 'parent', 'images'],
     });
   }
 
   async findByThreadId(threadId: string): Promise<Post[]> {
     return this.repository.find({
       where: { thread: { id: threadId } },
-      relations: ['user', 'parent'],
+      relations: ['user', 'parent', 'images'],
       order: {
         createdAt: 'ASC',
       },
@@ -36,7 +36,7 @@ export class PostRepository implements IPostRepository {
   async findByParentId(parentId: string): Promise<Post[]> {
     return this.repository.find({
       where: { parent: { id: parentId } },
-      relations: ['user'],
+      relations: ['user', 'images'],
       order: {
         createdAt: 'ASC',
       },
@@ -56,4 +56,3 @@ export class PostRepository implements IPostRepository {
     await this.repository.delete(id);
   }
 }
- 

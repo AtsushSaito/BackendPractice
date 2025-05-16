@@ -26,6 +26,7 @@ async function bootstrap() {
         .addTag('auth')
         .addTag('threads')
         .addTag('posts')
+        .addTag('ファイル')
         .addBearerAuth()
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);

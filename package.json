@@ -4,23 +4,36 @@
   "description": "スレッド型掲示板アプリケーション（モノレポ）",
   "private": true,
   "scripts": {
-    "dev:backend": "cd packages/backend && npm run start:dev",
-    "dev:frontend": "cd packages/frontend && npm run dev",
+    "dev:backend": "(cd packages/backend && npm run start:dev)",
+    "dev:frontend": "(cd packages/frontend && npm run dev -- -p 3001)",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "build:backend": "cd packages/backend && npm run build",
-    "build:frontend": "cd packages/frontend && npm run build",
+    "build:backend": "(cd packages/backend && npm run build)",
+    "build:frontend": "(cd packages/frontend && npm run build)",
     "build": "npm run build:backend && npm run build:frontend",
-    "start:backend": "cd packages/backend && npm run start:prod",
-    "start:frontend": "cd packages/frontend && npm run start",
+    "start:backend": "(cd packages/backend && npm run start:prod)",
+    "start:frontend": "(cd packages/frontend && npm run start)",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-    "docker:up": "docker-compose up --build",
-    "docker:down": "docker-compose down",
-    "docker:restart": "docker-compose down && docker-compose up --build"
+    "docker:up": "(cd packages/backend && docker-compose up --build)",
+    "docker:down": "(cd packages/backend && docker-compose down)",
+    "docker:restart": "(cd packages/backend && docker-compose down && docker-compose up --build)",
+    "backend": "(cd packages/backend && docker-compose up)",
+    "frontend": "(cd packages/frontend && npm run dev -- -p 3001)"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/multer": "^1.4.12",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.810.0",
+    "@nestjs/platform-express": "^11.1.1",
+    "@types/formidable": "^3.4.5",
+    "axios": "^1.9.0",
+    "form-data": "^4.0.2",
+    "formidable": "^3.5.4",
+    "multer": "^1.4.5-lts.2"
   }
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Docker環境ではサービス名で接続
-const API_BASE_URL = 'http://backend:3000';
+const API_BASE_URL = 'http://localhost:3000';
 
 export async function GET(request: NextRequest) {
   try {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Docker環境ではサービス名で接続
-const API_BASE_URL = 'http://backend:3000';
+// ローカル環境ではlocalhostを使用
+const API_BASE_URL = 'http://localhost:3000';
 
 // スレッド一覧取得
 export async function GET() {

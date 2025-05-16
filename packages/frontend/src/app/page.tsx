@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Navbar from './components/Navbar';
 import ThreadList from './components/ThreadList';
-import CreateThreadForm from './components/CreateThreadForm';
 import {
   Typography,
   Box,
@@ -14,27 +14,33 @@ import {
 } from '@mui/material';
 import Container from './components/ui/Container';
 
+// クライアントサイドのみでレンダリングするためにdynamic importを使用
+const CreateThreadForm = dynamic(
+  () => import('./components/CreateThreadForm'),
+  { ssr: false },
+);
+
 export default function Home() {
   // クライアントサイドでのみ初期化するため、初期値を明示的に設定
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ローカルストレージからトークンを安全に取得する関数
-  const getAuthToken = () => {
-    try {
-      const token = localStorage.getItem('token');
-      console.log(
-        'Home page checking auth token:',
-        token ? 'Token exists' : 'No token',
-      );
-      return token;
-    } catch (e) {
-      console.error('Failed to get token from localStorage:', e);
-      return null;
-    }
-  };
-
   useEffect(() => {
+    // ローカルストレージからトークンを安全に取得する関数
+    const getAuthToken = () => {
+      try {
+        const token = localStorage.getItem('token');
+        console.log(
+          'Home page checking auth token:',
+          token ? 'Token exists' : 'No token',
+        );
+        return token;
+      } catch (e) {
+        console.error('Failed to get token from localStorage:', e);
+        return null;
+      }
+    };
+
     // ログイン状態を確認
     const checkAuth = () => {
       setIsLoading(true);

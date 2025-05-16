@@ -7,6 +7,7 @@ import {
 import { IPostRepository } from '../../domain/posts/repositories/post.repository.interface';
 import { IUserRepository } from '../../domain/users/repositories/user.repository.interface';
 import { IThreadRepository } from '../../domain/threads/repositories/thread.repository.interface';
+import { IImageRepository } from '../../domain/images/repositories/image.repository.interface';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from '../../domain/posts/entities/post.entity';
@@ -20,6 +21,8 @@ export class PostsService {
     private readonly userRepository: IUserRepository,
     @Inject('IThreadRepository')
     private readonly threadRepository: IThreadRepository,
+    @Inject('IImageRepository')
+    private readonly imageRepository: IImageRepository,
   ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<Post> {
@@ -60,7 +63,20 @@ export class PostsService {
       parent: parentPost,
     });
 
-    return post;
+    // 画像がある場合は画像も保存
+    if (createPostDto.images && createPostDto.images.length > 0) {
+      for (let i = 0; i < createPostDto.images.length; i++) {
+        const imageDto = createPostDto.images[i];
+        await this.imageRepository.create({
+          ...imageDto,
+          postId: post.id,
+          position: imageDto.position || i, // positionが指定されていない場合は配列のインデックスを使用
+        });
+      }
+    }
+
+    // 画像も含めて再取得
+    return this.getPostById(post.id);
   }
 
   async getPostById(id: string): Promise<Post> {
@@ -106,6 +122,12 @@ export class PostsService {
     const post = await this.postRepository.findById(id);
     if (!post) {
       throw new NotFoundException('Post not found');
+    }
+
+    // 関連する画像があれば削除
+    const images = await this.imageRepository.findByPostId(id);
+    for (const image of images) {
+      await this.imageRepository.remove(image.id);
     }
 
     await this.postRepository.delete(id);

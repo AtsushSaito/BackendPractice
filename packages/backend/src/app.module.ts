@@ -5,9 +5,11 @@ import { UsersModule } from './presentation/users/users.module';
 import { ThreadsModule } from './presentation/threads/threads.module';
 import { PostsModule } from './presentation/posts/posts.module';
 import { AuthModule } from './presentation/auth/auth.module';
+import { ImagesModule } from './presentation/images/images.module';
 import { User } from './domain/users/entities/user.entity';
 import { Thread } from './domain/threads/entities/thread.entity';
 import { Post } from './domain/posts/entities/post.entity';
+import { Image } from './domain/images/entities/image.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -25,13 +27,14 @@ import { AppService } from './app.service';
       username: process.env.DATABASE_USERNAME || 'postgres',
       password: process.env.DATABASE_PASSWORD || 'postgres',
       database: process.env.DATABASE_NAME || 'threadboard',
-      entities: [User, Thread, Post],
+      entities: [User, Thread, Post, Image],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
     UsersModule,
     ThreadsModule,
     PostsModule,
     AuthModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
