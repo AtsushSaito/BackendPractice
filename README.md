@@ -1,167 +1,55 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
 # スレッド型掲示板アプリケーション
 
 モノレポ構成で作成された、スレッド型掲示板のWebアプリケーションです。NestJS、Next.js、PostgreSQLを使用しています。
 
-## アクセス情報
+## システム構成
 
-掲示板システムは以下のURLでアクセスできます:
+このプロジェクトは以下のコンポーネントで構成されています：
 
-- フロントエンド: http://localhost:3001
-- バックエンドAPI: http://localhost:3000
-- Swagger API ドキュメント: http://localhost:3000/api
+- **フロントエンド**: Next.js (TypeScript)
+  - ポート: 3001
+  - URL: http://localhost:3001
+- **バックエンド**: NestJS (TypeScript)
+  - ポート: 3000
+  - API URL: http://localhost:3000
+  - Swagger API ドキュメント: http://localhost:3000/api
+- **データベース**: PostgreSQL 16
+  - ポート: 5432
+  - データベース名: threadboard
+  - ユーザー名: postgres
+  - パスワード: postgres
 
-## 構成について
+## 起動方法
 
-このプロジェクトは以下の構成になっています：
+### Docker Compose を使用した起動 (推奨)
 
-- バックエンド: packages/backend内のdocker-compose.ymlでDocker上で動作
-- フロントエンド: packages/frontendディレクトリでNext.jsを直接実行
-
-## 実行方法
+プロジェクトルートディレクトリで以下のコマンドを実行するだけで、フロントエンド、バックエンド、PostgreSQLが一緒に起動します：
 
 ```bash
-# バックエンドを起動するには（Docker上）
+# すべてのサービスを起動
+$ docker compose up
+
+# バックグラウンドで起動する場合
+$ docker compose up -d
+
+# 変更を加えた後に再ビルドして起動する場合
+$ docker compose up --build
+```
+
+### 個別の起動方法
+
+プロジェクトのルートディレクトリから以下のコマンドを実行できます：
+
+```bash
+# バックエンドのみを起動 (Docker経由)
 $ npm run backend
 
-# フロントエンドを起動するには（直接実行）
+# フロントエンドのみを起動
 $ npm run frontend
 
-# または両方同時に起動（異なるターミナルで）
+# バックエンドとフロントエンドを同時に起動 (別々のターミナルで)
 $ npm run dev
 ```
-
-## Docker利用方法（バックエンドのみ）
-
-```bash
-# バックエンドシステムを起動するには
-$ npm run docker:up
-
-# バックエンドシステムを停止するには
-$ npm run docker:down
-
-# 変更を加えた後に再ビルドして起動するには
-$ npm run docker:restart
-```
-
-掲示板システムではアカウント登録とログイン後に、スレッドの作成や投稿が可能です。投稿への返信もサポートされています。
-
-## プロジェクト構成
-
-このプロジェクトはモノレポ構成で、以下のパッケージを含んでいます：
-
-- `packages/backend`: NestJSで実装されたバックエンドAPI
-- `packages/frontend`: Next.jsで実装されたフロントエンドアプリケーション
-- `docs/chat_history`: プロジェクト開発中のチャット履歴と開発の記録
-
-## 開発履歴
-
-プロジェクト開発中のチャット履歴は `docs/chat_history` ディレクトリに保存されています。このディレクトリには以下のファイルが含まれています：
-
-- `README.md`: チャット履歴に関する説明
-- `chat_history.md`: 開発中の会話を構造化したサマリー
-- `chat_history.json`: AIとの会話の生データ
-- `chat_history_raw.txt`: チャットデータの抽出元と概要
-
-これらのファイルは、プロジェクトの開発プロセス、特に認証機能の実装、エラーの修正、UIの改善などについて理解するのに役立ちます。
 
 ## 機能一覧
 
@@ -183,54 +71,44 @@ $ npm run docker:restart
    - 投稿への返信
    - 返信一覧取得（投稿単位）
 
-## セットアップ手順
+## プロジェクト構造
 
-### Dockerを使用する場合
+```
+/
+├── docker-compose.yml           # Docker Compose 設定ファイル
+├── packages/                    # モノレポのパッケージディレクトリ
+│   ├── backend/                 # NestJS バックエンド
+│   │   ├── Dockerfile          # バックエンド用 Dockerfile
+│   │   └── ...
+│   └── frontend/               # Next.js フロントエンド
+│       ├── Dockerfile          # フロントエンド用 Dockerfile
+│       └── ...
+└── ...
+```
 
-Docker Composeを使用して、バックエンドとフロントエンドを同時に実行できます：
+## 開発環境のセットアップ
+
+### 前提条件
+
+- Docker と Docker Compose がインストールされていること
+- Node.js と npm がインストールされていること (Docker を使わない場合)
+
+### 初回セットアップ
 
 ```bash
 # リポジトリをクローン
-$ git clone https://github.com/yourusername/thread-board.git
-$ cd thread-board
+$ git clone <repository-url>
+$ cd <repository-directory>
 
-# Dockerコンテナを起動
-$ docker-compose up --build
+# Docker Compose で起動
+$ docker compose up
 ```
 
-起動後、以下のURLでアクセスできます：
+アプリケーションは以下のURLでアクセスできます：
 
 - フロントエンド: http://localhost:3001
 - バックエンドAPI: http://localhost:3000
 - API仕様(Swagger): http://localhost:3000/api
-
-### 手動セットアップ
-
-#### 1. バックエンドのセットアップ
-
-```bash
-# バックエンドディレクトリに移動
-$ cd packages/backend
-
-# 依存関係のインストール
-$ npm install
-
-# 開発モードで実行
-$ npm run start:dev
-```
-
-#### 2. フロントエンドのセットアップ
-
-```bash
-# フロントエンドディレクトリに移動
-$ cd packages/frontend
-
-# 依存関係のインストール
-$ npm install
-
-# 開発モードで実行
-$ npm run dev
-```
 
 ## データベース設計
 
@@ -275,204 +153,3 @@ $ npm run dev
 ## ライセンス
 
 [MIT licensed](LICENSE)
-
-# Docker Compose Setup for Frontend, Backend, and PostgreSQL
-
-This project uses Docker Compose to run a full-stack application with a Next.js frontend, Node.js backend, and PostgreSQL database.
-
-## Next.js 15 Errors and Solutions
-
-### 1. Dynamic Route Handler Type Error
-
-**Error:**
-
-```
-Type error: Route "src/app/api/[id]/route.ts" has an invalid "GET" export:
-Type "{ params: { id: string; }; }" is not a valid type for the function's second argument.
-```
-
-**Solution:**
-In Next.js 15, dynamic route params are now passed as a Promise. Update your route handlers:
-
-```typescript
-// Before
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const id = params.id;
-  // ...
-}
-
-// After
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
-  // ...
-}
-```
-
-### 2. useSearchParams() Suspense Boundary Error
-
-**Error:**
-
-```
-useSearchParams() should be wrapped in a suspense boundary at page "/login"
-```
-
-**Solution:**
-Wrap components using `useSearchParams()` in a Suspense boundary:
-
-```tsx
-// Before
-export default function LoginPage() {
-  const searchParams = useSearchParams();
-  // ...
-}
-
-// After
-function LoginContent() {
-  const searchParams = useSearchParams();
-  // ...
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginContent />
-    </Suspense>
-  );
-}
-```
-
-### 3. Backend AWS SDK Error
-
-**Error:**
-
-```
-Cannot find module 'aws-sdk' or its corresponding type declarations.
-```
-
-**Solution:**
-Install the AWS SDK in the backend project:
-
-```bash
-cd packages/backend
-npm install aws-sdk
-```
-
-## Running the Project
-
-1. Start Docker Desktop
-2. Run the application:
-
-```bash
-docker compose up
-```
-
-## Environment Setup
-
-Ensure your `.env` file in the project root contains the necessary credentials for AWS and other services required by your backend.
-
-## Docker Compose環境への移行ガイド（初心者向け）
-
-ローカル開発からDockerコンテナ環境への移行時には、以下のような問題に注意する必要があります。
-
-### 1. Docker環境での開発時の注意点
-
-#### パス関連の問題
-
-**問題**: `Cannot find module '/app/dist/main'` のようなエラー  
-**原因**: Docker内でのパスがローカル環境と異なる場合がある  
-**解決策**:
-
-- ボリュームマウントの設定を確認する
-- Dockerfile内のWORKDIRが正しく設定されているか確認する
-
-#### ビルドプロセスの違い
-
-**問題**: TypeScriptコードがコンパイルされない  
-**解決策**:
-
-- 開発環境では `ts-node-dev` を使ってTypeScriptを直接実行する
-- 本番環境ではマルチステージビルドを使用してコンパイル済みコードを実行する
-
-#### 依存関係の管理
-
-**問題**: `Cannot find module 'aws-sdk'` のようなエラー  
-**原因**: コンテナ内に必要なパッケージがインストールされていない  
-**解決策**:
-
-- `package.json` に必要な依存関係をすべて記載する
-- イメージ再ビルド時に依存関係が正しくインストールされるようにする
-
-### 2. Docker Composeでの環境変数
-
-**問題**: 環境変数が正しく設定されていない  
-**解決策**:
-
-```yaml
-# docker-compose.yml内で環境変数を設定
-services:
-  backend:
-    environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-```
-
-### 3. フロントエンドとバックエンドの連携
-
-**問題**: コンテナ間通信での接続エラー  
-**解決策**:
-
-- バックエンドのURLを `http://backend:3000` のようにサービス名を使用する
-- Docker Compose内で適切なネットワーク設定を行う
-
-### 4. 開発効率を高めるための設定
-
-**問題**: コード変更時の再ビルドが遅い  
-**解決策**:
-
-- ホストディレクトリをコンテナにマウントする（ボリューム設定）
-- ホットリロード対応のツール（ts-node-dev, nodemon）を使用する
-
-```yaml
-volumes:
-  - ./packages/backend:/app
-  - /app/node_modules # node_modulesはコンテナ内のものを使用
-```
-
-### 5. マルチステージビルドと開発環境
-
-**本番環境向け（マルチステージビルド）**:
-
-```dockerfile
-FROM node:20-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-FROM node:20-alpine
-WORKDIR /app
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-CMD ["npm", "run", "start:prod"]
-```
-
-**開発環境向け（シンプルな構成）**:
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-CMD ["npm", "run", "start:dev"]
-```
-
-これらの点に注意することで、ローカル環境からDocker Compose環境への移行をスムーズに行うことができます。
-
