@@ -112,6 +112,58 @@ $ docker compose up
 
 ## データベース設計
 
+### ER図
+
+```mermaid
+erDiagram
+    User ||--o{ Thread : "作成する"
+    User ||--o{ Post : "投稿する"
+    Thread ||--o{ Post : "含む"
+    Post ||--o{ Post : "返信する"
+    Post ||--o{ Image : "含む"
+
+    User {
+        uuid id PK "ユーザーID"
+        string username "ユーザー名(一意)"
+        string email "メールアドレス(一意)"
+        string password "パスワード(ハッシュ化)"
+        timestamp createdAt "作成日時"
+        timestamp updatedAt "更新日時"
+    }
+
+    Thread {
+        uuid id PK "スレッドID"
+        string title "スレッドタイトル"
+        text description "スレッド説明"
+        uuid user_id FK "作成者ID"
+        timestamp createdAt "作成日時"
+        timestamp updatedAt "更新日時"
+    }
+
+    Post {
+        uuid id PK "投稿ID"
+        text content "投稿内容(HTML可)"
+        uuid user_id FK "投稿者ID"
+        uuid thread_id FK "所属スレッドID"
+        uuid parent_id FK "親投稿ID(返信先、オプション)"
+        timestamp createdAt "作成日時"
+        timestamp updatedAt "更新日時"
+    }
+
+    Image {
+        uuid id PK "画像ID"
+        uuid post_id FK "所属投稿ID"
+        string url "画像URL"
+        string filename "元ファイル名"
+        string mimetype "MIMEタイプ"
+        integer size "ファイルサイズ(バイト)"
+        integer position "表示順序"
+        string alt "代替テキスト(オプション)"
+        timestamp createdAt "作成日時"
+        timestamp updatedAt "更新日時"
+    }
+```
+
 ### 接続情報
 
 データベース接続情報は主に以下のファイルで設定しています：
@@ -146,9 +198,15 @@ $ docker compose up
    - リレーション：User（多対1）, Post（1対多）
 
 3. **packages/backend/src/domain/posts/entities/post.entity.ts**
+
    - `posts`テーブルの定義
    - カラム：`id`, `content`, `createdAt`, `updatedAt`
-   - リレーション：User（多対1）, Thread（多対1）, Parent Post（多対1、自己参照）
+   - リレーション：User（多対1）, Thread（多対1）, Parent Post（多対1、自己参照）, Image（1対多）
+
+4. **packages/backend/src/domain/images/entities/image.entity.ts**
+   - `images`テーブルの定義
+   - カラム：`id`, `url`, `filename`, `mimetype`, `size`, `position`, `alt`, `createdAt`, `updatedAt`
+   - リレーション：Post（多対1）
 
 ## ライセンス
 
