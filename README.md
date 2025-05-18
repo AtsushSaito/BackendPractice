@@ -18,6 +18,67 @@
   - データベース名: threadboard
   - ユーザー名: postgres
   - パスワード: postgres
+- **画像ストレージ**: Amazon S3
+  - バケット名: backendpracticeimages
+  - リージョン: ap-northeast-1
+
+### システム構成図
+
+```mermaid
+graph TD
+    User[ユーザー] -->|アクセス| Frontend
+
+    subgraph "Docker環境"
+        Frontend[フロントエンド\nNext.js] -->|API呼び出し| Backend
+        Backend[バックエンド\nNestJS] -->|データ永続化| DB[(PostgreSQL)]
+        Backend -->|画像保存/取得| S3[(Amazon S3)]
+    end
+
+    style Frontend fill:#61DAFB,stroke:#333,color:#000
+    style Backend fill:#E0234E,stroke:#333,color:#fff
+    style DB fill:#336791,stroke:#333,color:#fff
+    style S3 fill:#FF9900,stroke:#333,color:#000
+```
+
+### コンポーネント間の関係
+
+```mermaid
+sequenceDiagram
+    actor User as ユーザー
+    participant Frontend as フロントエンド<br/>(Next.js)
+    participant NextAPI as Next.js API Routes
+    participant Backend as バックエンドAPI<br/>(NestJS)
+    participant DB as PostgreSQL
+    participant S3 as Amazon S3
+
+    User->>Frontend: Webページにアクセス
+    Frontend->>NextAPI: APIリクエスト
+    NextAPI->>Backend: プロキシリクエスト
+    Backend->>DB: データ取得/保存
+
+    alt 画像アップロード処理
+        User->>Frontend: 画像をアップロード
+        Frontend->>NextAPI: 画像データを送信
+        NextAPI->>Backend: 画像を転送
+        Backend->>S3: 画像を保存
+        S3-->>Backend: 署名付きURL
+        Backend-->>NextAPI: 画像URL
+        NextAPI-->>Frontend: 画像URL
+        Frontend-->>User: アップロード完了表示
+    end
+
+    alt スレッド/投稿の表示
+        User->>Frontend: スレッド表示リクエスト
+        Frontend->>NextAPI: スレッドデータ要求
+        NextAPI->>Backend: スレッド情報取得
+        Backend->>DB: スレッドとコメントを取得
+        Backend->>S3: 画像の署名付きURLを生成
+        S3-->>Backend: 署名付きURL
+        Backend-->>NextAPI: スレッド、コメント、画像URL
+        NextAPI-->>Frontend: 表示データ
+        Frontend-->>User: スレッドを表示
+    end
+```
 
 ## 起動方法
 
@@ -70,6 +131,7 @@ $ npm run dev
    - 投稿一覧取得（スレッド単位）
    - 投稿への返信
    - 返信一覧取得（投稿単位）
+   - 画像のアップロードと表示
 
 ## プロジェクト構造
 
@@ -92,6 +154,7 @@ $ npm run dev
 
 - Docker と Docker Compose がインストールされていること
 - Node.js と npm がインストールされていること (Docker を使わない場合)
+- AWS アカウントと S3 バケットのアクセス権（画像機能を使用する場合）
 
 ### 初回セットアップ
 
@@ -99,6 +162,10 @@ $ npm run dev
 # リポジトリをクローン
 $ git clone <repository-url>
 $ cd <repository-directory>
+
+# 環境変数の設定（AWS S3用）
+$ cp .env.example .env
+$ vi .env  # AWS_ACCESS_KEY_ID と AWS_SECRET_ACCESS_KEY を設定
 
 # Docker Compose で起動
 $ docker compose up
