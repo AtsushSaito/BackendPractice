@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ローカル環境ではlocalhostを使用
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// Docker環境では'backend'コンテナ名を使用
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Next.js 15では動的パラメータは非同期なのでawaitする
+    // id パラメータを取得
     const { id } = await params;
 
     // バックエンドAPIにリクエストを転送

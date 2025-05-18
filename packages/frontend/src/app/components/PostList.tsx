@@ -35,7 +35,7 @@ const PostList = forwardRef<
       // 厳密に親投稿を持たない投稿だけをフィルタリング
       // 複数の条件で確実に返信でないことを確認
       const topLevelPosts = postsData.filter(
-        (post) => !post.parentId && !post.parent && !post.parent?.id,
+        (post) => !post.parentId && (!post.parent || !post.parent.id),
       );
 
       console.log(
@@ -63,7 +63,7 @@ const PostList = forwardRef<
         // 厳密に親投稿を持たない投稿だけをフィルタリング
         // 複数の条件で確実に返信でないことを確認
         const topLevelPosts = postsData.filter(
-          (post) => !post.parentId && !post.parent && !post.parent?.id,
+          (post) => !post.parentId && (!post.parent || !post.parent.id),
         );
 
         console.log(

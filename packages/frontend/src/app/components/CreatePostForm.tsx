@@ -9,13 +9,11 @@ import {
   Typography,
   Alert,
   Button,
-  IconButton,
   Stack,
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { styled } from '@mui/material/styles';
 import ImageIcon from '@mui/icons-material/Image';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 interface CreatePostFormProps {
   threadId: string;
@@ -121,11 +119,11 @@ export default function CreatePostForm({
 
         setContent(newContent);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('画像アップロードエラー:', err);
-      setError(
-        `画像のアップロードに失敗しました: ${err.message || 'エラーが発生しました'}`,
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : 'エラーが発生しました';
+      setError(`画像のアップロードに失敗しました: ${errorMessage}`);
     } finally {
       setIsUploading(false);
       // ファイル選択をリセット
@@ -195,24 +193,29 @@ export default function CreatePostForm({
 
       // 親コンポーネントに投稿が作成されたことを通知
       onPostCreated();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('投稿作成エラー:', err);
-      console.error('エラーメッセージ:', err.message);
-      console.error('エラータイプ:', typeof err);
-      if (err.stack) {
-        console.error('スタックトレース:', err.stack);
-      }
 
-      // エラーメッセージを適切に設定
-      if (
-        err.message.includes('Authorization') ||
-        err.message.includes('Unauthorized')
-      ) {
-        setError('ログインが必要です。認証情報が不足しています。');
-      } else if (err.message.includes('threadId')) {
-        setError('スレッドIDのエラー: 投稿先のスレッドが見つかりません。');
+      if (err instanceof Error) {
+        console.error('エラーメッセージ:', err.message);
+        console.error('エラータイプ:', typeof err);
+        if (err.stack) {
+          console.error('スタックトレース:', err.stack);
+        }
+
+        const errorMsg = err.message;
+        if (
+          errorMsg.includes('Authorization') ||
+          errorMsg.includes('Unauthorized')
+        ) {
+          setError('ログインが必要です。認証情報が不足しています。');
+        } else if (errorMsg.includes('threadId')) {
+          setError('スレッドIDのエラー: 投稿先のスレッドが見つかりません。');
+        } else {
+          setError(errorMsg || '投稿の作成に失敗しました。');
+        }
       } else {
-        setError(err.message || '投稿の作成に失敗しました。');
+        setError('投稿の作成に失敗しました。');
       }
     } finally {
       setIsSubmitting(false);

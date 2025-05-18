@@ -13,6 +13,7 @@ import remarkGfm from 'remark-gfm';
 
 interface PostItemProps {
   post: Post;
+  // コメントされているため使われないが、APIの一貫性のために残す
   onPostCreated: () => void;
   isReply?: boolean;
   fallbackThreadId?: string; // 親からthreadIdを受け取るフォールバック用
@@ -132,11 +133,7 @@ export default function PostItem({
 
     // 返信が作成されたことを親コンポーネントに通知するが、
     // トップレベルの投稿リストの更新は行わない
-    if (!isReply) {
-      // 親投稿自体に変更があった場合のみ親コンポーネントに通知
-      // これによりトップレベルの投稿リストは更新されなくなる
-      // onPostCreated();
-    }
+    // 注：現在は通知しない設計になっています
   };
 
   return (
@@ -145,25 +142,25 @@ export default function PostItem({
     >
       <div className="mb-2">
         <div className="whitespace-pre-wrap">
-          <ReactMarkdown 
+          <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              img: ({ node, ...props }) => (
-                <img 
-                  {...props} 
-                  style={{ 
+              img: ({ ...props }) => (
+                <img
+                  {...props}
+                  style={{
                     maxWidth: '100%',
                     maxHeight: '400px',
                     objectFit: 'contain',
-                    margin: '8px 0'
-                  }} 
-                  alt={props.alt || "投稿画像"}
+                    margin: '8px 0',
+                  }}
+                  alt={props.alt || '投稿画像'}
                   loading="lazy"
                 />
               ),
-              p: ({node, ...props}) => (
+              p: ({ ...props }) => (
                 <p {...props} style={{ marginBottom: '0.5rem' }} />
-              )
+              ),
             }}
           >
             {post.content}

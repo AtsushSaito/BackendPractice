@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../utils/api';
@@ -77,11 +77,14 @@ export default function LoginForm() {
           setError('ログインレスポンスからトークンが取得できませんでした。');
           console.error('トークンが見つかりません:', response);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('ログインエラー:', err);
 
         // エラーメッセージの内容から適切なメッセージを表示
-        if (err.message && err.message.includes('Invalid credentials')) {
+        if (
+          err instanceof Error &&
+          err.message.includes('Invalid credentials')
+        ) {
           // ユーザー名が存在するか確認
           try {
             const checkUser = await fetch(
@@ -103,7 +106,7 @@ export default function LoginForm() {
               // ユーザーは存在するがパスワードが間違っている場合
               setError('パスワードが正しくありません。再度お試しください。');
             }
-          } catch (checkErr) {
+          } catch (_) {
             // ユーザー確認に失敗した場合は一般的なエラーメッセージ
             setError(
               'ログイン情報が正しくありません。ユーザー名とパスワードを確認してください。',
@@ -111,8 +114,9 @@ export default function LoginForm() {
           }
         } else {
           setError(
-            err.message ||
-              'ログインに失敗しました。認証情報を確認してください。',
+            err instanceof Error
+              ? err.message
+              : 'ログインに失敗しました。認証情報を確認してください。',
           );
         }
       }

@@ -1,5 +1,18 @@
-// Nextのフロントエンドからアクセスするときは相対パスで十分
-const API_BASE_URL = '';
+import {
+  User,
+  Thread,
+  Post,
+  LoginData,
+  RegisterData,
+  AuthResponse,
+} from '../types';
+
+// Docker Compose環境ではバックエンドコンテナ名を指定
+// 環境変数から取得するように変更（環境による分岐を可能に）
+const API_BASE_URL =
+  typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    : 'http://backend:3000';
 
 // トークン取得用の安全なヘルパー関数
 function getSavedToken(): string | null {
@@ -60,7 +73,12 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  // endpointから先頭の/apiを削除
+  const cleanEndpoint = endpoint.startsWith('/api')
+    ? endpoint.substring(4)
+    : endpoint;
+
+  const url = `${API_BASE_URL}${cleanEndpoint}`;
 
   // サーバーサイドレンダリング時は一部の処理をスキップ
   const isClient = typeof window !== 'undefined';
@@ -86,16 +104,16 @@ export async function fetchApi<T>(
         : `Bearer ${token}`;
 
       console.log(
-        `Request to ${endpoint} with Auth header:`,
+        `Request to ${cleanEndpoint} with Auth header:`,
         headers['Authorization'].substring(0, 20) + '...',
       );
     } else {
-      console.warn(`No auth token available for request to: ${endpoint}`);
+      console.warn(`No auth token available for request to: ${cleanEndpoint}`);
     }
   }
 
   // リクエスト情報をログに出力
-  console.log(`API request to ${endpoint}`);
+  console.log(`API request to ${cleanEndpoint}`);
 
   const response = await fetch(url, {
     ...options,
@@ -103,18 +121,21 @@ export async function fetchApi<T>(
   });
 
   // レスポンスのステータスを詳細にログ出力
-  console.log(`API response status for ${endpoint}: ${response.status}`);
+  console.log(`API response status for ${cleanEndpoint}: ${response.status}`);
 
   // レスポンスが成功しなかった場合はエラーをスロー
   if (!response.ok) {
-    let errorData = {};
+    let errorData: any = {};
     try {
       errorData = await response.json();
-      console.error(`API error response for ${endpoint}:`, errorData);
-    } catch (e) {
-      console.error(`Failed to parse error response for ${endpoint}:`, e);
+      console.error(`API error response for ${cleanEndpoint}:`, errorData);
+    } catch (error) {
+      console.error(
+        `Failed to parse error response for ${cleanEndpoint}:`,
+        error,
+      );
       const text = await response.text().catch(() => 'No response body');
-      console.error(`Raw error response for ${endpoint}:`, text);
+      console.error(`Raw error response for ${cleanEndpoint}:`, text);
       errorData = { message: text };
     }
 
@@ -127,17 +148,22 @@ export async function fetchApi<T>(
   try {
     const data = await response.json();
     console.log(
-      `API response data for ${endpoint} (summary):`,
+      `API response data for ${cleanEndpoint} (summary):`,
       typeof data === 'object'
         ? `Object with ${Object.keys(data).length} keys`
         : typeof data,
     );
-    return data;
-  } catch (e) {
-    console.error(`Failed to parse success response for ${endpoint}:`, e);
+    return data as T;
+  } catch (error) {
+    console.error(
+      `Failed to parse success response for ${cleanEndpoint}:`,
+      error,
+    );
     const text = await response.text().catch(() => 'No response body');
-    console.error(`Raw success response for ${endpoint}:`, text);
-    throw new Error(`Failed to parse response: ${e.message}`);
+    console.error(`Raw success response for ${cleanEndpoint}:`, text);
+    throw new Error(
+      `Failed to parse response: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -169,19 +195,19 @@ export async function uploadFile<T>(file: File): Promise<T> {
       : `Bearer ${token}`;
   }
 
-  const response = await fetch('/api/images/upload', {
+  const response = await fetch(`${API_BASE_URL}/images/upload`, {
     method: 'POST',
     headers,
     body: formData,
   });
 
   if (!response.ok) {
-    let errorData = {};
+    let errorData: any = {};
     try {
       errorData = await response.json();
       console.error('File upload error:', errorData);
-    } catch (e) {
-      console.error('Failed to parse error response for file upload:', e);
+    } catch (error) {
+      console.error('Failed to parse error response for file upload:', error);
       const text = await response.text().catch(() => 'No response body');
       console.error('Raw error response for file upload:', text);
       errorData = { message: text };
@@ -194,7 +220,7 @@ export async function uploadFile<T>(file: File): Promise<T> {
 
   const data = await response.json();
   console.log('File upload response:', data);
-  return data;
+  return data as T;
 }
 
 // 各APIエンドポイントに対応する関数
@@ -203,17 +229,17 @@ export const api = {
   threads: {
     getAll: () => {
       console.log('Getting all threads');
-      return fetchApi<any[]>('/api/threads');
+      return fetchApi<Thread[]>('/api/threads');
     },
 
     getById: (id: string) => {
       console.log(`Getting thread by ID: ${id}`);
-      return fetchApi<any>(`/api/threads/${id}`);
+      return fetchApi<Thread>(`/api/threads/${id}`);
     },
 
-    create: (data: any) => {
+    create: (data: { title: string; description: string }) => {
       console.log('Creating new thread:', data);
-      return fetchApi<any>('/api/threads', {
+      return fetchApi<Thread>('/api/threads', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -224,20 +250,24 @@ export const api = {
   posts: {
     getByThreadId: (threadId: string) => {
       console.log(`Getting posts for thread: ${threadId}`);
-      return fetchApi<any[]>(`/api/posts?threadId=${threadId}`);
+      return fetchApi<Post[]>(`/api/posts?threadId=${threadId}`);
     },
 
     getById: (id: string) => {
       console.log(`Getting post by ID: ${id}`);
-      return fetchApi<any>(`/api/posts/${id}`);
+      return fetchApi<Post>(`/api/posts/${id}`);
     },
 
     getReplies: (postId: string) => {
       console.log(`Getting replies for post: ${postId}`);
-      return fetchApi<any[]>(`/api/posts/${postId}/replies`);
+      return fetchApi<Post[]>(`/api/posts/${postId}/replies`);
     },
 
-    create: (data: any) => {
+    create: (data: {
+      content: string;
+      threadId: string;
+      parentId?: string;
+    }) => {
       console.log('Creating new post:', data);
       // ここでトークンを再確認（デバッグ用）
       if (typeof window !== 'undefined') {
@@ -248,7 +278,7 @@ export const api = {
         }
       }
 
-      return fetchApi<any>('/api/posts', {
+      return fetchApi<Post>('/api/posts', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -265,9 +295,9 @@ export const api = {
 
   // 認証関連
   auth: {
-    login: async (data: any) => {
+    login: async (data: LoginData) => {
       console.log('Logging in user:', data.username);
-      const response = await fetchApi<any>('/api/auth/login', {
+      const response = await fetchApi<AuthResponse>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -277,16 +307,16 @@ export const api = {
 
       return response;
     },
-    register: (data: any) => {
+    register: (data: RegisterData) => {
       console.log('Registering new user:', data.username);
-      return fetchApi<any>('/api/users', {
+      return fetchApi<AuthResponse>('/api/users', {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     getCurrentUser: () => {
       console.log('Getting current user profile');
-      return fetchApi<any>('/api/auth/profile');
+      return fetchApi<User>('/api/auth/profile');
     },
   },
 };

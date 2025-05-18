@@ -6,7 +6,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   Alert,
   Chip,
   Divider,
@@ -69,7 +68,7 @@ export default function CreateThreadForm() {
 
       // 作成成功後にスレッド詳細ページへ遷移
       router.push(`/threads/${newThread.id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('スレッド作成エラー:', err);
 
       // トークンの状態を再確認
@@ -80,15 +79,19 @@ export default function CreateThreadForm() {
         console.error('Error checking token after failure:', e);
       }
 
-      let errorMessage = err.message || 'スレッドの作成に失敗しました。';
+      let errorMessage = 'スレッドの作成に失敗しました。';
 
       // 認証エラーの場合は特定のメッセージを表示
-      if (
-        err.message?.includes('Unauthorized') ||
-        err.message?.includes('401')
-      ) {
-        errorMessage =
-          'ログインセッションが切れています。再度ログインしてください。';
+      if (err instanceof Error) {
+        errorMessage = err.message || errorMessage;
+
+        if (
+          err.message?.includes('Unauthorized') ||
+          err.message?.includes('401')
+        ) {
+          errorMessage =
+            'ログインセッションが切れています。再度ログインしてください。';
+        }
       }
 
       setError(errorMessage);

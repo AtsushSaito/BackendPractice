@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ローカル環境ではlocalhostを使用
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// Docker環境では'backend'コンテナ名を使用
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // 投稿一覧取得（スレッドIDでフィルタリングできる）
 export async function GET(request: NextRequest) {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           message: 'レスポンスの解析に失敗しました',
-          error: parseError.toString(),
+          error: (parseError as any).toString(),
           responseText: text,
         },
         { status: 500 },
@@ -63,8 +64,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             message: 'レスポンスの解析に失敗しました',
-            error: parseError.toString(),
+            error: (parseError as any).toString(),
             responseText: text,
           },
           { status: 500 },
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           message: 'レスポンスの解析に失敗しました',
-          error: parseError.toString(),
+          error: (parseError as any).toString(),
           responseText: text,
         },
         { status: 500 },
@@ -226,8 +227,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );

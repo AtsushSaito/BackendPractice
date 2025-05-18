@@ -3,23 +3,22 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  IconButton, 
-  Box, 
-  Menu, 
-  MenuItem, 
-  Avatar, 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Box,
+  Menu,
+  MenuItem,
+  Avatar,
   Divider,
   Container,
-  useMediaQuery 
+  useMediaQuery,
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { User } from '../types';
 
 // スタイル付きコンポーネント
@@ -40,10 +39,12 @@ export default function Navbar() {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   // メニュー関連の状態
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [mobileAnchorEl, setMobileAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileAnchorEl, setMobileAnchorEl] = useState<null | HTMLElement>(
+    null,
+  );
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -121,7 +122,7 @@ export default function Navbar() {
               fontWeight: 700,
               letterSpacing: '.1rem',
               mr: 2,
-              ml: 0
+              ml: 0,
             }}
           >
             スレッド掲示板
@@ -139,10 +140,10 @@ export default function Navbar() {
                   <Button color="inherit" component={NavbarLink} href="/login">
                     ログイン
                   </Button>
-                  <Button 
-                    variant="outlined" 
-                    color="inherit" 
-                    component={NavbarLink} 
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    component={NavbarLink}
                     href="/register"
                     sx={{ ml: 1, border: '1px solid white' }}
                   >
@@ -163,19 +164,25 @@ export default function Navbar() {
                       size="small"
                       edge="end"
                     >
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          bgcolor: 'secondary.main',
+                        }}
+                      >
                         {user.username.charAt(0).toUpperCase()}
                       </Avatar>
                     </IconButton>
                   </Box>
-                  
+
                   <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
                     PaperProps={{
                       elevation: 3,
-                      sx: { minWidth: '180px' }
+                      sx: { minWidth: '180px' },
                     }}
                   >
                     <MenuItem disabled>
@@ -199,35 +206,49 @@ export default function Navbar() {
               >
                 <MenuIcon />
               </IconButton>
-              
+
               <Menu
                 anchorEl={mobileAnchorEl}
                 open={Boolean(mobileAnchorEl)}
                 onClose={handleMobileMenuClose}
                 PaperProps={{
                   elevation: 3,
-                  sx: { minWidth: '180px' }
+                  sx: { minWidth: '180px' },
                 }}
               >
-                <MenuItem onClick={handleMobileMenuClose} component={Link} href="/">
+                <MenuItem
+                  onClick={handleMobileMenuClose}
+                  component={Link}
+                  href="/"
+                >
                   ホーム
                 </MenuItem>
-                
+
                 {!isLoading && !user && (
                   <>
-                    <MenuItem onClick={handleMobileMenuClose} component={Link} href="/login">
+                    <MenuItem
+                      onClick={handleMobileMenuClose}
+                      component={Link}
+                      href="/login"
+                    >
                       ログイン
                     </MenuItem>
-                    <MenuItem onClick={handleMobileMenuClose} component={Link} href="/register">
+                    <MenuItem
+                      onClick={handleMobileMenuClose}
+                      component={Link}
+                      href="/register"
+                    >
                       アカウント登録
                     </MenuItem>
                   </>
                 )}
-                
+
                 {!isLoading && user && (
                   <>
                     <MenuItem disabled>
-                      <Typography variant="body2">{user.username}さん</Typography>
+                      <Typography variant="body2">
+                        {user.username}さん
+                      </Typography>
                     </MenuItem>
                     <Divider />
                     <MenuItem onClick={handleLogout}>ログアウト</MenuItem>

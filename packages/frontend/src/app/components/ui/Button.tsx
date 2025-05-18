@@ -36,6 +36,7 @@ const StyledButton = styled(MuiButton)<{
     | 'info'
     | 'success'
     | 'neutral';
+  variant?: 'text' | 'outlined' | 'contained';
 }>(({ theme, color = 'primary', variant = 'contained' }) => {
   if (color === 'neutral') {
     return {

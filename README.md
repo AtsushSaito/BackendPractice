@@ -275,3 +275,204 @@ $ npm run dev
 ## ライセンス
 
 [MIT licensed](LICENSE)
+
+# Docker Compose Setup for Frontend, Backend, and PostgreSQL
+
+This project uses Docker Compose to run a full-stack application with a Next.js frontend, Node.js backend, and PostgreSQL database.
+
+## Next.js 15 Errors and Solutions
+
+### 1. Dynamic Route Handler Type Error
+
+**Error:**
+
+```
+Type error: Route "src/app/api/[id]/route.ts" has an invalid "GET" export:
+Type "{ params: { id: string; }; }" is not a valid type for the function's second argument.
+```
+
+**Solution:**
+In Next.js 15, dynamic route params are now passed as a Promise. Update your route handlers:
+
+```typescript
+// Before
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const id = params.id;
+  // ...
+}
+
+// After
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  // ...
+}
+```
+
+### 2. useSearchParams() Suspense Boundary Error
+
+**Error:**
+
+```
+useSearchParams() should be wrapped in a suspense boundary at page "/login"
+```
+
+**Solution:**
+Wrap components using `useSearchParams()` in a Suspense boundary:
+
+```tsx
+// Before
+export default function LoginPage() {
+  const searchParams = useSearchParams();
+  // ...
+}
+
+// After
+function LoginContent() {
+  const searchParams = useSearchParams();
+  // ...
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+```
+
+### 3. Backend AWS SDK Error
+
+**Error:**
+
+```
+Cannot find module 'aws-sdk' or its corresponding type declarations.
+```
+
+**Solution:**
+Install the AWS SDK in the backend project:
+
+```bash
+cd packages/backend
+npm install aws-sdk
+```
+
+## Running the Project
+
+1. Start Docker Desktop
+2. Run the application:
+
+```bash
+docker compose up
+```
+
+## Environment Setup
+
+Ensure your `.env` file in the project root contains the necessary credentials for AWS and other services required by your backend.
+
+## Docker Compose環境への移行ガイド（初心者向け）
+
+ローカル開発からDockerコンテナ環境への移行時には、以下のような問題に注意する必要があります。
+
+### 1. Docker環境での開発時の注意点
+
+#### パス関連の問題
+
+**問題**: `Cannot find module '/app/dist/main'` のようなエラー  
+**原因**: Docker内でのパスがローカル環境と異なる場合がある  
+**解決策**:
+
+- ボリュームマウントの設定を確認する
+- Dockerfile内のWORKDIRが正しく設定されているか確認する
+
+#### ビルドプロセスの違い
+
+**問題**: TypeScriptコードがコンパイルされない  
+**解決策**:
+
+- 開発環境では `ts-node-dev` を使ってTypeScriptを直接実行する
+- 本番環境ではマルチステージビルドを使用してコンパイル済みコードを実行する
+
+#### 依存関係の管理
+
+**問題**: `Cannot find module 'aws-sdk'` のようなエラー  
+**原因**: コンテナ内に必要なパッケージがインストールされていない  
+**解決策**:
+
+- `package.json` に必要な依存関係をすべて記載する
+- イメージ再ビルド時に依存関係が正しくインストールされるようにする
+
+### 2. Docker Composeでの環境変数
+
+**問題**: 環境変数が正しく設定されていない  
+**解決策**:
+
+```yaml
+# docker-compose.yml内で環境変数を設定
+services:
+  backend:
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+```
+
+### 3. フロントエンドとバックエンドの連携
+
+**問題**: コンテナ間通信での接続エラー  
+**解決策**:
+
+- バックエンドのURLを `http://backend:3000` のようにサービス名を使用する
+- Docker Compose内で適切なネットワーク設定を行う
+
+### 4. 開発効率を高めるための設定
+
+**問題**: コード変更時の再ビルドが遅い  
+**解決策**:
+
+- ホストディレクトリをコンテナにマウントする（ボリューム設定）
+- ホットリロード対応のツール（ts-node-dev, nodemon）を使用する
+
+```yaml
+volumes:
+  - ./packages/backend:/app
+  - /app/node_modules # node_modulesはコンテナ内のものを使用
+```
+
+### 5. マルチステージビルドと開発環境
+
+**本番環境向け（マルチステージビルド）**:
+
+```dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+CMD ["npm", "run", "start:prod"]
+```
+
+**開発環境向け（シンプルな構成）**:
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "run", "start:dev"]
+```
+
+これらの点に注意することで、ローカル環境からDocker Compose環境への移行をスムーズに行うことができます。
+

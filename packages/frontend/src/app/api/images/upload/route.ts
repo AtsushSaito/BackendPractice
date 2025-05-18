@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ローカル環境ではlocalhostを使用
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// サーバーサイドとクライアントサイドで異なるURLを使用
+const API_BASE_URL =
+  typeof process.env.BACKEND_URL !== 'undefined'
+    ? process.env.BACKEND_URL
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           message: 'レスポンスの解析に失敗しました',
-          error: parseError.toString(),
+          error: (parseError as any).toString(),
           responseText: text,
         },
         { status: 500 },
@@ -90,8 +94,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );

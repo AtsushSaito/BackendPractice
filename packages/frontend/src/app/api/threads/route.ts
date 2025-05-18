@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ローカル環境ではlocalhostを使用
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// サーバーサイドとクライアントサイドで異なるURLを使用
+const API_BASE_URL =
+  typeof process.env.BACKEND_URL !== 'undefined'
+    ? process.env.BACKEND_URL
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // スレッド一覧取得
 export async function GET() {
@@ -44,8 +48,8 @@ export async function GET() {
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );
@@ -55,41 +59,27 @@ export async function GET() {
 // スレッド作成
 export async function POST(request: NextRequest) {
   try {
-    // クライアントから送信されたAuthorizationヘッダーを取得
-    const token = request.headers.get('Authorization');
-    console.log(
-      'Received token in threads API:',
-      token ? 'Token present' : 'No token',
-    );
+    // リクエストボディを取得
+    const body = await request.json();
 
+    // Authorizationヘッダーを取得
+    const token = request.headers.get('Authorization');
     if (!token) {
       return NextResponse.json(
-        { message: 'Authorization header is required' },
+        { message: 'Authorization header is missing' },
         { status: 401 },
       );
     }
 
-    // Bearer トークンの形式を確認
-    let fullToken = token;
-    if (!token.startsWith('Bearer ')) {
-      // Bearer プレフィックスがない場合は追加
-      fullToken = `Bearer ${token}`;
-      console.log('Added Bearer prefix to token');
-    }
-
-    // リクエストボディを取得
-    const body = await request.json();
-    console.log('Creating thread with body:', JSON.stringify(body));
+    console.log('Sending request to:', `${API_BASE_URL}/threads`);
+    console.log('Request body:', JSON.stringify(body));
 
     // バックエンドAPIにリクエストを転送
-    console.log('Sending request to:', `${API_BASE_URL}/threads`);
-    console.log('With token:', fullToken.substring(0, 20) + '...');
-
     const response = await fetch(`${API_BASE_URL}/threads`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: fullToken,
+        Authorization: token,
       },
       body: JSON.stringify(body),
       cache: 'no-store',
@@ -101,7 +91,7 @@ export async function POST(request: NextRequest) {
       data = await response.json();
       console.log('Thread creation response:', data);
     } catch (parseError) {
-      console.error('Error parsing thread creation response:', parseError);
+      console.error('Error parsing response:', parseError);
       const text = await response.text().catch(() => 'No response body');
       console.log('Response text:', text);
       data = {
@@ -119,12 +109,12 @@ export async function POST(request: NextRequest) {
     // 成功した場合はデータを返す
     return NextResponse.json(data);
   } catch (error) {
-    console.error('API error in threads POST:', error);
+    console.error('API error:', error);
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );

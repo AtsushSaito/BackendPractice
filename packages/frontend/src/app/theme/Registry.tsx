@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { useServerInsertedHTML } from 'next/navigation';
@@ -59,13 +59,6 @@ export default function Registry({ children }: { children: React.ReactNode }) {
       />
     );
   });
-
-  // マウントされたかどうかの状態を追跡
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <CacheProvider value={cache}>

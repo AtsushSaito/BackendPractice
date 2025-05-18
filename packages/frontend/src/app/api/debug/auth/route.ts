@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Docker環境ではサービス名で接続
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// Docker環境では'backend'コンテナ名を使用
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,8 +70,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         message: 'デバッグAPIエラー',
-        error: error.toString(),
-        stack: error.stack,
+        error: (error as any).toString(),
+        stack: (error as any).stack,
       },
       { status: 500 },
     );

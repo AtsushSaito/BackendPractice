@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ローカル環境ではlocalhostを使用
-const API_BASE_URL = 'http://localhost:3000';
+// バックエンドのAPIエンドポイント
+// Docker環境では'backend'コンテナ名を使用
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Next.js 15では動的パラメータは非同期なのでawaitする
+    // idパラメータを取得
     const { id } = await params;
     console.log(`スレッド詳細取得リクエスト - ID: ${id}`);
 
@@ -42,7 +43,7 @@ export async function GET(
       data = await response.json();
       console.log('スレッド詳細レスポンス:', data);
     } catch (parseError) {
-      console.error('レスポンスJSONのパースに失敗:', parseError);
+      console.error('レスポンスJSONのパースに失敗:', String(parseError));
       // レスポンスの本文を取得してみる
       const text = await response.text().catch(() => 'レスポンス本文なし');
       console.log('レスポンス本文:', text);
@@ -50,7 +51,7 @@ export async function GET(
       return NextResponse.json(
         {
           message: 'レスポンスの解析に失敗しました',
-          error: parseError.toString(),
+          error: String(parseError),
           responseText: text,
         },
         { status: 500 },
@@ -70,12 +71,12 @@ export async function GET(
     console.log('スレッド詳細取得成功');
     return NextResponse.json(data);
   } catch (error) {
-    console.error('スレッド詳細取得API処理エラー:', error);
+    console.error('スレッド詳細取得API処理エラー:', String(error));
     return NextResponse.json(
       {
         message: 'Internal Server Error',
-        error: error.toString(),
-        stack: error.stack,
+        error: String(error),
+        stack: (error as Error).stack,
       },
       { status: 500 },
     );
