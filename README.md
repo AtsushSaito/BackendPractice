@@ -80,6 +80,145 @@ sequenceDiagram
     end
 ```
 
+### Reactコンポーネント構造と認証フロー
+
+```mermaid
+graph TD
+    subgraph "ページコンポーネント"
+        HomePage["HomePage\n(page.tsx)"]
+        LoginPage["LoginPage\n(login/page.tsx)"]
+        RegisterPage["RegisterPage\n(register/page.tsx)"]
+        ThreadDetailPage["ThreadDetailPage\n(threads/[id]/page.tsx)"]
+    end
+
+    subgraph "UIコンポーネント"
+        Navbar["Navbar\n(認証状態確認・表示)"]
+        LoginForm["LoginForm\n(ログイン処理)"]
+        RegisterForm["RegisterForm\n(ユーザー登録)"]
+        ThreadList["ThreadList\n(スレッド一覧表示)"]
+        PostList["PostList\n(投稿一覧表示)"]
+        CreateThreadForm["CreateThreadForm\n(スレッド作成)"]
+        CreatePostForm["CreatePostForm\n(投稿作成)"]
+    end
+
+    subgraph "認証・APIユーティリティ"
+        ApiUtils["api.ts\n(APIリクエスト処理)"]
+        LocalStorage["localStorage\n(トークン保存)"]
+    end
+
+    %% ページとコンポーネントの関係
+    HomePage --> Navbar
+    HomePage --> ThreadList
+    HomePage --> CreateThreadForm
+    LoginPage --> Navbar
+    LoginPage --> LoginForm
+    RegisterPage --> Navbar
+    RegisterPage --> RegisterForm
+    ThreadDetailPage --> Navbar
+    ThreadDetailPage --> PostList
+    ThreadDetailPage --> CreatePostForm
+
+    %% 認証関連の関係
+    LoginForm -->|"ログイン処理\nトークン保存"| LocalStorage
+    Navbar -->|"トークン取得\n認証状態確認"| LocalStorage
+    ApiUtils -->|"トークン取得\nリクエストヘッダー設定"| LocalStorage
+
+    CreateThreadForm -->|"認証済みリクエスト"| ApiUtils
+    CreatePostForm -->|"認証済みリクエスト"| ApiUtils
+    ThreadList -->|"スレッド取得"| ApiUtils
+    PostList -->|"投稿取得"| ApiUtils
+
+    style Navbar fill:#FFCCCB,stroke:#333,color:#000
+    style LoginForm fill:#FFCCCB,stroke:#333,color:#000
+    style RegisterForm fill:#FFCCCB,stroke:#333,color:#000
+    style LocalStorage fill:#FFCCCB,stroke:#333,color:#000
+    style ApiUtils fill:#FFCCCB,stroke:#333,color:#000
+```
+
+### 認証フローと状態管理
+
+```mermaid
+sequenceDiagram
+    actor User as ユーザー
+    participant Client as クライアント<br/>(ブラウザ)
+    participant Components as Reactコンポーネント
+    participant LocalStorage as ローカルストレージ
+    participant NextAPI as Next.js API Routes
+    participant Backend as バックエンドAPI<br/>(NestJS)
+    participant JWT as JWT認証
+
+    %% ユーザー登録フロー
+    User->>Client: ユーザー登録フォーム入力
+    Client->>Components: RegisterForm送信
+    Components->>NextAPI: /api/users POST
+    NextAPI->>Backend: /users POST
+    Backend->>Backend: パスワードハッシュ化
+    Backend->>JWT: JWTトークン生成
+    Backend-->>NextAPI: ユーザー情報返却
+    NextAPI-->>Components: 登録成功
+    Components->>Client: ログインページへリダイレクト
+
+    %% ログインフロー
+    User->>Client: ログインフォーム入力
+    Client->>Components: LoginForm送信
+    Components->>NextAPI: /api/auth/login POST
+    NextAPI->>Backend: /auth/login POST
+    Backend->>JWT: 認証情報検証
+    Backend->>JWT: JWTトークン生成
+    Backend-->>NextAPI: アクセストークン返却
+    NextAPI-->>Components: トークン受け取り
+    Components->>LocalStorage: トークン保存
+    Components->>Client: ホームページへリダイレクト
+
+    %% 認証状態の確認と維持
+    User->>Client: ページ訪問/リロード
+    Client->>Components: Navbar初期化
+    Components->>LocalStorage: トークン取得
+    alt トークンあり
+        Components->>NextAPI: /api/auth/profile GET
+        NextAPI->>Backend: /auth/me GET
+        Backend->>JWT: トークン検証
+        alt 有効なトークン
+            Backend-->>NextAPI: ユーザー情報
+            NextAPI-->>Components: ユーザーデータ
+            Components->>Components: 認証済み状態に更新
+        else 無効なトークン
+            Backend-->>NextAPI: 認証エラー
+            NextAPI-->>Components: エラー返却
+            Components->>LocalStorage: トークン削除
+            Components->>Components: 未認証状態に更新
+        end
+    else トークンなし
+        Components->>Components: 未認証状態を維持
+    end
+
+    %% 認証が必要なアクション
+    User->>Client: スレッド作成/投稿
+    Client->>Components: フォーム送信
+    Components->>LocalStorage: トークン取得
+    Components->>NextAPI: 認証ヘッダー付きリクエスト
+    NextAPI->>Backend: 認証ヘッダー転送
+    Backend->>JWT: トークン検証
+    alt 有効なトークン
+        Backend->>Backend: リクエスト処理
+        Backend-->>NextAPI: 成功レスポンス
+        NextAPI-->>Components: 処理結果
+        Components-->>Client: UI更新
+    else 無効なトークン
+        Backend-->>NextAPI: 認証エラー
+        NextAPI-->>Components: エラー返却
+        Components->>LocalStorage: トークン削除
+        Components->>Client: ログインページへリダイレクト
+    end
+
+    %% ログアウト
+    User->>Client: ログアウトボタンクリック
+    Client->>Components: Navbarログアウト処理
+    Components->>LocalStorage: トークン削除
+    Components->>Components: ユーザー状態をnullに設定
+    Components->>Client: UI更新(未認証表示)
+```
+
 ## 起動方法
 
 ### Docker Compose を使用した起動 (推奨)
