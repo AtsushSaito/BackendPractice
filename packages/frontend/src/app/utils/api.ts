@@ -9,10 +9,7 @@ import {
 
 // Docker Compose環境ではバックエンドコンテナ名を指定
 // 環境変数から取得するように変更（環境による分岐を可能に）
-const API_BASE_URL =
-  typeof window !== 'undefined'
-    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-    : 'http://backend:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // トークン取得用の安全なヘルパー関数
 function getSavedToken(): string | null {
@@ -33,24 +30,22 @@ function getSavedToken(): string | null {
   }
 }
 
-// トークン状態のデバッグログ出力用関数
+// デバッグ用のトークン状態ロギング関数
 function logTokenState() {
-  if (typeof window === 'undefined') return;
-
   try {
     const token = localStorage.getItem('token');
     if (token) {
       console.log(
         'Token exists:',
         token.substring(0, 15) + '...',
-        'Length:',
+        'length:',
         token.length,
       );
     } else {
-      console.warn('No token found in localStorage');
+      console.log('No token in localStorage');
     }
   } catch (e) {
-    console.error('Error checking token:', e);
+    console.error('Unable to check token state:', e);
   }
 }
 
@@ -73,7 +68,7 @@ export async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  // endpointから先頭の/apiを削除
+  // エンドポイントから先頭の/apiプレフィックスを削除（既存のコードとの互換性のため）
   const cleanEndpoint = endpoint.startsWith('/api')
     ? endpoint.substring(4)
     : endpoint;
@@ -118,6 +113,7 @@ export async function fetchApi<T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // CORSリクエストでCookieを送信
   });
 
   // レスポンスのステータスを詳細にログ出力
@@ -199,6 +195,7 @@ export async function uploadFile<T>(file: File): Promise<T> {
     method: 'POST',
     headers,
     body: formData,
+    credentials: 'include', // CORSリクエストでCookieを送信
   });
 
   if (!response.ok) {
@@ -229,17 +226,17 @@ export const api = {
   threads: {
     getAll: () => {
       console.log('Getting all threads');
-      return fetchApi<Thread[]>('/api/threads');
+      return fetchApi<Thread[]>('/threads');
     },
 
     getById: (id: string) => {
       console.log(`Getting thread by ID: ${id}`);
-      return fetchApi<Thread>(`/api/threads/${id}`);
+      return fetchApi<Thread>(`/threads/${id}`);
     },
 
     create: (data: { title: string; description: string }) => {
       console.log('Creating new thread:', data);
-      return fetchApi<Thread>('/api/threads', {
+      return fetchApi<Thread>('/threads', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -250,17 +247,17 @@ export const api = {
   posts: {
     getByThreadId: (threadId: string) => {
       console.log(`Getting posts for thread: ${threadId}`);
-      return fetchApi<Post[]>(`/api/posts?threadId=${threadId}`);
+      return fetchApi<Post[]>(`/posts?threadId=${threadId}`);
     },
 
     getById: (id: string) => {
       console.log(`Getting post by ID: ${id}`);
-      return fetchApi<Post>(`/api/posts/${id}`);
+      return fetchApi<Post>(`/posts/${id}`);
     },
 
     getReplies: (postId: string) => {
       console.log(`Getting replies for post: ${postId}`);
-      return fetchApi<Post[]>(`/api/posts/${postId}/replies`);
+      return fetchApi<Post[]>(`/posts/${postId}/replies`);
     },
 
     create: (data: {
@@ -278,7 +275,7 @@ export const api = {
         }
       }
 
-      return fetchApi<Post>('/api/posts', {
+      return fetchApi<Post>('/posts', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -297,7 +294,7 @@ export const api = {
   auth: {
     login: async (data: LoginData) => {
       console.log('Logging in user:', data.username);
-      const response = await fetchApi<AuthResponse>('/api/auth/login', {
+      const response = await fetchApi<AuthResponse>('/auth/login', {
         method: 'POST',
         body: JSON.stringify(data),
       });
@@ -309,14 +306,14 @@ export const api = {
     },
     register: (data: RegisterData) => {
       console.log('Registering new user:', data.username);
-      return fetchApi<AuthResponse>('/api/users', {
+      return fetchApi<AuthResponse>('/users', {
         method: 'POST',
         body: JSON.stringify(data),
       });
     },
     getCurrentUser: () => {
       console.log('Getting current user profile');
-      return fetchApi<User>('/api/auth/profile');
+      return fetchApi<User>('/auth/me');
     },
   },
 };

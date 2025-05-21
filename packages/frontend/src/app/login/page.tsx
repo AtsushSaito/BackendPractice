@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import * as React from 'react';
 import Navbar from '../components/Navbar';
 import LoginForm from '../components/LoginForm';
 

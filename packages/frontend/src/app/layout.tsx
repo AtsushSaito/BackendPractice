@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 import './globals.css';
 import Registry from './theme/Registry';
+import { AuthProvider } from './context/AuthContext';
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className={roboto.className} suppressHydrationWarning>
-        <Registry>{children}</Registry>
+        <Registry>
+          <AuthProvider>{children}</AuthProvider>
+        </Registry>
       </body>
     </html>
   );

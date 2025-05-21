@@ -8,12 +8,16 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // CORS設定 - より寛容な設定に変更
+  // フロントエンドのオリジンを環境変数から取得するか、デフォルト値を使用
+  const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:3001';
+
+  // CORS設定 - フロントエンドからのリクエストを許可
   app.enableCors({
-    origin: true, // すべてのオリジンを許可
+    origin: [frontendOrigin, 'http://localhost:3001', 'http://frontend:3001'], // フロントエンドのオリジンを明示的に許可
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true, // クッキーなどの認証情報を含むリクエストを許可
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+    exposedHeaders: ['Authorization'],
   });
 
   // グローバル例外フィルターの設定

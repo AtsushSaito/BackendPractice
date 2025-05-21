@@ -26,7 +26,7 @@ export default function CreateThreadForm() {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        setTokenStatus(`存在（長さ: ${token.length}文字）`);
+        setTokenStatus(`ログイン済み（トークンの長さ: ${token.length}文字）`);
         console.log('Thread form token check:', token.substring(0, 15) + '...');
       } else {
         setTokenStatus('なし');

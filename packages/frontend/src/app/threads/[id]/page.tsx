@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import * as React from 'react';
 import Navbar from '../../components/Navbar';
 import PostList from '../../components/PostList';
 import CreatePostForm from '../../components/CreatePostForm';
 import { Thread } from '../../types';
 import { api } from '../../utils/api';
+import { useAuthContext } from '../../context/AuthContext';
 import {
   Box,
   Typography,
@@ -34,20 +36,14 @@ export default function ThreadDetailPage() {
   );
 
   const [thread, setThread] = useState<Thread | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // AuthContextからログイン状態を取得
+  const { isLoggedIn } = useAuthContext();
+
   useEffect(() => {
     console.log(`スレッド詳細ページがマウントされました - ID: ${threadId}`);
-
-    // ログイン状態を確認
-    const token = localStorage.getItem('token');
-    console.log(`ログイン状態: ${token ? 'ログイン済み' : '未ログイン'}`);
-    if (token) {
-      console.log(`トークン: ${token.substring(0, 20)}...`);
-    }
-    setIsLoggedIn(!!token);
 
     // スレッド情報を取得
     const fetchThread = async () => {

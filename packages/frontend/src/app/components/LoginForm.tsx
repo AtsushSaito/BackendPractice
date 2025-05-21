@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '../utils/api';
 import { LoginData } from '../types';
+import { useAuthContext } from '../context/AuthContext';
 
 export default function LoginForm() {
   const [formData, setFormData] = useState<LoginData>({
@@ -14,6 +15,7 @@ export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { fetchUserProfile } = useAuthContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,12 +69,12 @@ export default function LoginForm() {
           // トークンをローカルストレージに保存
           saveTokenAndNotify(token);
 
-          // 少し待ってからリダイレクト（ストレージの更新を確実にするため）
-          setTimeout(() => {
-            // ホームページにリダイレクト
-            router.push('/');
-            router.refresh();
-          }, 100);
+          // ユーザー情報を取得 (AuthContextの状態を更新)
+          await fetchUserProfile();
+
+          // ホームページにリダイレクト
+          router.push('/');
+          router.refresh();
         } else {
           setError('ログインレスポンスからトークンが取得できませんでした。');
           console.error('トークンが見つかりません:', response);

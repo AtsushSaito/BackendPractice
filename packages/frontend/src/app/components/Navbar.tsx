@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import { User } from '../types';
+import { useAuthContext } from '../context/AuthContext';
 
 // スタイル付きコンポーネント
 const NavbarLink = styled(Link)(({ theme }) => ({
@@ -34,8 +34,7 @@ const NavbarLink = styled(Link)(({ theme }) => ({
 }));
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, logout } = useAuthContext();
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -62,48 +61,8 @@ export default function Navbar() {
     setMobileAnchorEl(null);
   };
 
-  useEffect(() => {
-    // ログイン状態を確認
-    const checkAuthStatus = async () => {
-      setIsLoading(true);
-      const token = localStorage.getItem('token');
-
-      if (token) {
-        try {
-          // ログインユーザー情報を取得する処理
-          // Next.jsのAPIルートを使用してCORSを回避
-          const response = await fetch('/api/auth/profile', {
-            headers: {
-              Authorization: token.startsWith('Bearer ')
-                ? token
-                : `Bearer ${token}`,
-            },
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-          } else {
-            // トークンが無効な場合
-            localStorage.removeItem('token');
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('認証エラー:', error);
-          localStorage.removeItem('token');
-          setUser(null);
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    checkAuthStatus();
-  }, []);
-
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+    logout();
     handleMenuClose();
     router.push('/');
   };
